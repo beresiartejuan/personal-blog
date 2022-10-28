@@ -18,7 +18,7 @@ export function Paragrahp({ children }){
 }
 
 export function Photo({ src, alt }){
-    return (<img src={src} alt={alt} className="py-4 max-w-2xl m-auto"></img>)
+    return (<img src={src} alt={alt} className="py-4 w-full max-w-2xl m-auto"></img>)
 }
 
 export function HiperLink({ children, href }){
