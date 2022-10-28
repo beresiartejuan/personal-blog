@@ -1,5 +1,4 @@
 import Link from "next/link"
-import Image from "next/image";
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { dracula } from 'react-syntax-highlighter/dist/cjs/styles/hljs'
 import { FcDownRight } from 'react-icons/fc';
@@ -19,7 +18,7 @@ export function Paragrahp({ children }){
 }
 
 export function Photo({ src, alt }){
-    return (<Image src={src} alt={alt} className="py-4 max-w-2xl m-auto"></Image>)
+    return (<img src={src} alt={alt} className="py-4 max-w-2xl m-auto"></img>)
 }
 
 export function HiperLink({ children, href }){
