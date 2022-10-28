@@ -1,5 +1,5 @@
 ---
-title: "Como instalar Javascript en Linux y Windows"
+title: "Como instalar Javascript en Linux"
 date: "2022-10-22"
 tags:
     - "javascript"
@@ -9,16 +9,94 @@ tags:
 
 ![logo node](/node-js-logo.svg)
 
-## Javascript para... ¿Computadoras?
+## Javascript para... ¿Computadoras 💻?
 
-Javascript es un lenguaje de programación increible, a estas alturas es casi indispensable cuando vamos a hacer una web y es uno de los lenguajes más populares. Sí eres nuevo en el mundo de la programación seguramente pensabas que Javascript solo se podía ejecutar en el navegador, pero tambíen se puede utilizar como un lenguaje de proposito general. ¡Al igual que Python!
+Javascript es un lenguaje de programación increible, a estas alturas es casi indispensable cuando vamos a hacer una web y es uno de los lenguajes más populares. 
 
-Para ejecutar javascript fuera del navegador necesitas tener un interprete de Javascript. Sí buscas en internet como ejecutar Javascript en tu computadora seguramente te encontraras con **[NodeJS](https://nodejs.org/es/)**. Este es el programa más utilizado para ejecutar Javascript fuera del navegador y es el que vamos a instalar, sin embargo, hay que decir que tambíen existen alternativas a node: [Dino](https://deno.land/) y [Bun JS](https://bun.sh/). Dino es un moderno interprete de Javascript ( Y de TypeScript ), mientras que Bun es una alternativa que se centra en ser eficiente y más rapida que Node y Dino. Muy pronto voy hacer un blog contando las diferencias entre estos tres a profundidad.
+Sí eres nuevo en el mundo de la programación seguramente pensabas que Javascript solo se podía ejecutar en el navegador, pero tambíen se puede utilizar como un lenguaje de proposito general. ¡Al igual que Python!
+
+### Alternativas a Node 🔍
+
+Para ejecutar javascript fuera del navegador necesitas tener un interprete de Javascript. Sí buscas en internet como ejecutar Javascript en tu computadora seguramente te encontraras con **[NodeJS](https://nodejs.org/es/)**. Este es el programa más utilizado para ejecutar Javascript fuera del navegador y es el que vamos a instalar, sin embargo, hay que decir que tambíen existen alternativas a node: [Dino](https://deno.land/) y [Bun JS](https://bun.sh/). 
+
+Dino es un moderno interprete de Javascript ( Y de TypeScript ), mientras que Bun es una alternativa que se centra en ser eficiente y más rapido que Node y Dino. Muy pronto voy hacer un blog contando las diferencias entre estos tres a profundidad.
 
 ## Instalar Node en Linux
 
+![Nvm avatar](/nvm-logo-color.svg)
+
+Nvm es un administrador de versiones de de node. Diseñado para hacer una instalación sencilla de distintas versiones de node y de su administrador de paquetes npm.
+
+### 🗑️ Una solución limpia
+
+¿Pero que tiene de especial nvm? Pues mucho! Podemos tener varias versiones de node instaladas, podemos cambiar de versiones y actualizar a la versión más reciente de node muy facilmente.
+
+Para instalar nvm simplemente pega la siguiente linea en tu terminal:
+
 ```bash
-sudo apt install nvm
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.2/install.sh | bash
+# El comando de arriba descarga el instalador de nvm por medio de curl y lo ejecuta
 ```
 
-**Nota del autor:** *Este post todavía esta en via de desarrollo*
+Sí todo va bien, deberías poder ver la versión de nvm que acabas de instalar con el siguiente comando:
+
+```bash
+nvm --version
+```
+
+***Nota:*** *Es posible que tengas que cerrar y abrir la terminal para que funcione*
+
+### Instalar node y npm con nvm
+
+Ya tienes instalado nvm, pero ahora falta instalar una version de node y de npm. Para instalar una versión en especifico usamos el comando:
+
+```bash
+nvm install 18.12.0 # Ó cualquier otra versión
+```
+
+Para listar las versiones de node disponibles solo ejecuta el comando:
+
+```bash
+nvm ls-remote
+```
+
+Pero sí quieres instalar la ultima versión, puede ejecutar lo siguiente:
+
+```bash
+nvm install node
+```
+
+### Usar una versión de node
+
+Si queremos usar o cambiar de versión de node, es tan simple como ejecutar lo siguiente:
+
+```bash
+nvm use 18.12.0 # Ó cualquier otra versión
+```
+
+Y si queremos tener esa versión de node como predeterminada, podemos hacer lo siguiente:
+
+```bash
+nvm alias default 18.12.0
+nvm use default
+```
+
+En caso de querer que simpre la ultima versión que se instale sea la predeterminada, solo tienes que cambiar el numero de versión por "node":
+
+```bash
+nmv alias default node
+nvm use default
+```
+
+### ✨La comodidad del alias✨
+
+Con el comando *nvm alias* puedes ponerle un nombre a las distintas versiones de node. Y ese nombre despues lo puede usar en el comando *nvm use*, lo que hace que sea muy comodo navegar entre versiones y podamos hacer esto:
+
+```bash
+# Guardar una version que usemos mucho
+nvm alias miVersionFavorita 18.12.0
+# Cambiar de version
+nvm use 17.0.0
+# Y despues poder volver a la versión que más usamos 😎
+nvm use miVersionFavorita
+```

@@ -110,7 +110,7 @@ class Avion implements IVehiculo {
 
 Ahora conseguimos algo muy valioso: *No importa cuantos vehiculos vayamos añadiendo, sí todos usan la interfaz de vehiculo entonces todos tendran metodos y propiedades en común.* Por lo que sí tenemos una variable con una clase que usa la interfaz Vehiculo( Ya sea una moto, un auto, un camión o un avión ) sabemos que **siempre** va a tener un metodo "llevar" y "dejarPedido".
 
-Sí eres atento, te habras dado cuenta de que estamos usando polimorfismo. Y ya solo nos falta dar un paso más para implementar el patrón Factory: Nuestra fabrica de vehiculos. Así es, le delegamos la tarea de decidir en que vehiculo llevar el pedido a otra función o clase.
+Y ya solo nos falta dar un paso más para implementar el patrón Factory: Nuestra fabrica de vehiculos. Así es, le delegamos la tarea de decidir en que vehiculo llevar el pedido a otra función o clase.
 
 ```typescript
 class Distribuidora {
