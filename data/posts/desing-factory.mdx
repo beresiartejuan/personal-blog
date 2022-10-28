@@ -1,0 +1,158 @@
+---
+title: "Patrones de diseños en Typescript: Factory"
+date: "2022-10-26"
+tags:
+    - "javascript"
+    - "factory"
+    - "desing-patterns"
+---
+
+![Patron de diseño factory](/factory-method-es.png)
+
+## ¿Que es el patron de diseño Factory?
+
+### 📚La definición formal
+
+El Patrón Factory es un patrón de diseño creacional que proporciona una interfaz para crear objetos en una superclase, mientras permite a las subclases alterar el tipo de objetos que se crearán.
+
+### 📘 La definición que yo uso
+
+El patrón de diseño Factory se enfoca en **proporcionar una interfaz para la creación de subclases**. Lo que vemos en la siguiente imagen es un diagrama de este patron.
+
+Tenemos una interfaz que define las caracteristicas de nuestros productos **( Product )**, una superclase que se encarga de crear estos productos **( Creator )**, una clase **( Creator1 )** que que hereda de la superclase y que puede modificar la creación de estos productos **( Product1 )**. 
+
+![Diagrama UML del patron factory](/Design_Factory_Method_Design_Pattern.jpg)
+
+Dicho de una manera más simple: Tenemos una interfaz que **comparten** todos los Productos y además tenemos una interfaz que **comparten** todas las fabricas. Y las fabricas *solamente se encargan de crear* los productos. Y los Productos pueden ser varios objetos *que implementen una interfaz **única** en común*.
+
+## Patrón Factory en Typescript
+
+Supongamos que tenemos un programa encargado de hacer envios y tenemos toda nuestra logica de envio en la clase Camión, de tal manera que todos los envios son transportados por caminones.
+
+```typescript
+class Envio {
+    public distancia: number;
+    public contenido: any;
+}
+
+class Camion {
+
+    conducir(distancia){
+        console.log(`Conduje ${distancia} Km`);
+    }
+
+    dejarPedido(){
+        console.log('El pedido ha sido entragdo');
+    }
+
+    llevar(pedido: Envio){
+        this.conducir(pedido.distancia);
+    }
+
+}
+
+const mi_pedido = new Envio(); // De alguna manera obtenemos los datos del envio
+const transporte = new Camion(); // Obtenemos la unica manera de envio que tenemos
+
+transporte.llevar(mi_pedido);
+transporte.dejarPedido();
+```
+
+Pero nos surge un problema, el camión solo puede llevar envios a una distancia menor a 100 kilometros, por lo que tenemos que crear una nueva clase: La clase Avión. Esta clase avión va a compartir algunos metodos con la clase Camión.
+
+```typescript
+class Avion {
+
+    volar(distancia){
+        console.log(`Volé ${distancia} Km`);
+    }
+
+    dejarPedido(){
+        console.log('El producto ha sido entregado');
+    }
+
+    llevar(pedido: Envio){
+        this.volar(Envio.distancia)
+    }
+
+}
+```
+### 🎉 ¡Bienvenido el polimorfismo! 🎉
+
+Ahora pensemos un poco... Antes de que surga la necesidad de crear otro vehiculo, ¿No sería conveniente definir lo que pueden hacer todos los vehiculos posibles en nuestro codigo? Algo como esto:
+
+```typescript
+interface IEnvio {
+    public distancia: number;
+    public contenido: any;
+}
+
+interface IVehiculo {
+    alcanze: number; // Indica cuanta distancia puede recorrer
+    llevar(pedido: Envio): void;
+    dejarPedido(): void;
+}
+
+class Envio implements IEnvio {
+    ...
+}
+
+class Camion implements IVehiculo {
+    ...
+}
+
+class Avion implements IVehiculo {
+    ...
+}
+```
+
+### Principio de única responsabilidad: Cumplido 🦾
+
+Ahora conseguimos algo muy valioso: *No importa cuantos vehiculos vayamos añadiendo, sí todos usan la interfaz de vehiculo entonces todos tendran metodos y propiedades en común.* Por lo que sí tenemos una variable con una clase que usa la interfaz Vehiculo( Ya sea una moto, un auto, un camión o un avión ) sabemos que **siempre** va a tener un metodo "llevar" y "dejarPedido".
+
+Sí eres atento, te habras dado cuenta de que estamos usando polimorfismo. Y ya solo nos falta dar un paso más para implementar el patrón Factory: Nuestra fabrica de vehiculos. Así es, le delegamos la tarea de decidir en que vehiculo llevar el pedido a otra función o clase.
+
+```typescript
+class Distribuidora {
+
+    transportes: IVehiculo[] = [
+        new Auto(),
+        new Camion(),
+        new Avioneta(),
+        new Avion()
+    ]
+
+    obtenerTransporte(distancia: number): IVehiculo {
+        let transporte: IVehiculo = this.transportes[-1];
+
+        for(vehiculo of this.transportes){
+            if(vehiculo.alcanze > distancia){
+                transporte = vehiculo;
+                break;
+            }
+        }
+
+        return transporte;
+    }
+
+}
+```
+
+De estamanera pasamos de elegir el vehiculo en el que se lleva el envio a tener algo más ordenado:
+
+```typescript
+const mi_pedido = new Envio(); /* De alguna manera obtenermos los datos del pedido */
+
+const distribuidora = new Distribuidora(); /* Obtenemos la fabrica */
+/* Le delegamos la tarea de elegir el vehiculo  */
+const transporte = distribuidora.obtenerTransporte(mi_pedido.distancia); 
+/* Lo siguiente siempre va a funcionar, no importa cuantos vehiculos vayamos añadiendo  */
+transporte.llevar(mi_pedido);
+transporte.dejarPedido();
+```
+
+Este patron nos da una ventaja: No solo puede existir una fabrica. Puede haber una fabrica de vehiculos que solo devuelva camiones o aviones, otra fabrica que solo devuelva autos, ect...
+
+### Referencias
+
+Este articulo esta inspirado en el post de [RefactoringGuru](https://refactoring.guru/es/design-patterns/factory-method) 🧐
