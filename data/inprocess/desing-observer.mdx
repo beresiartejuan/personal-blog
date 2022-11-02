@@ -1,0 +1,101 @@
+---
+title: "Patrones de diseño en Typescript: Observer"
+date: "2022-10-28"
+tags:
+    - "typescript"
+    - "desing-patterns"
+    - "observer"
+---
+
+## ¿Que es el patrón de diseño Observer?
+
+El patrón observer se enfoca en implementar mecanismos de subscripción. Todo esto con el fin de que varios objetos se puedan enterar del cambio de estado de otro.
+
+### ¿Como funciona?
+
+Como vemos en la siguiente imagen, tenemos una clase **ConcreteSubject** que tiene varios metodos: Un metodo para **attach** para agregar un observador, otro llamado **detach** para elminiar un observador, otra llamado **notify** que se encarga de notificar a todos los observadores que el objeto ha cambiado y los respectivos metodos de **getState** y **setState** permiten alterar el estado de la clase desde afuera de ella.
+
+Por otro lado, los observadores tienen un metodo **update** que se manda a llamar cuando el **ConcreteSubject** llama a **notify**. Pero esto se puede cambiar( como veremos más adelante ).
+
+![Diagrama uml del patrón Observer](/observer-method-es.png)
+
+### Implementado Observer en Typescript
+
+Supongamos que tenemos varios usuarios editando una lista. Tanto los usarios como la lista y los items de esta lista van a estar representados por objetos.
+
+### 📁 Los items
+
+```typescript
+class Item {
+
+    private id: string;
+    public text: string;
+
+    constructor(text){
+        this.text = text;
+    }
+
+    setId(id: string){
+        this.id = id;
+    }
+
+    getId(): string {
+        return this.id;
+    }
+
+}
+
+```
+
+### 🗃 La lista
+
+```typescript
+
+class Lista {
+
+    public content: Item[] = [];
+
+    public addItem(item: Item){
+        this.content.push(item);
+    }
+
+    public updateItem(item: Item){
+        this.content = this.content.map(item_value => 
+            item.getId() == item_value.getId() ? item : item_value;
+        )
+    }
+
+    public deleteItem(item: Item){
+        this.content = this.content.filter(item_value =>
+            item_value.getId() !== item.getId()
+        )
+    }
+
+}
+
+```
+
+### 🧑🏽 Los usuarios
+
+```typescript
+
+let aux = 0;
+
+class User {
+
+    public name: string;
+    private lista: Lista;
+
+    constructor(lista: Lista){
+        this.notas = lista;
+    }
+
+    addNota(nota: string){
+        const item = new Item(nota);
+        item.setId(aux.toString());
+        aux++;
+        this.notas.addItem(item);
+    }
+
+}
+```

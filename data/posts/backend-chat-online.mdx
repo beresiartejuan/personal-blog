@@ -1,0 +1,145 @@
+---
+title: "Chat Online en Javascript | Parte 1"
+date: "2022-11-1"
+tags:
+    - "javascript"
+    - "socket"
+    - "proyectos"
+---
+
+![Socket.io logo](/socket-io.jpg)
+
+## Setup del proyecto
+
+Lo primero es lo primero: ¿Que vamos a hacer?. En este proyecto me voy a enfocar en explicar como voy diseñando una sala de chat en tiempo real. La sala de chat va a tener las siguientes caracteristicas:
+
+### 🏷 NickNames
+
+Los usuarios antes de entrar a nuestra app, se van a tener que logear. Por lo que vamos a deserrolar un login, pero nada complicado, solamente le vamos a pedir un nickname y despues nos vamos a asegurar de que ese nickname no lo este usando otro usuario.
+
+### Sala de chat pública 👥
+
+Los usuarios depues de logearse van a entrar en una sala de chat pública. Los usuarios podrán mandar mensajes y recibirlos. Y todos van a ser capaces de entrar a esta sala.
+
+### Salas de chat privadas 🔐
+
+Los usuarios van a poder crear una sala de chat **privada**. Para que otro usuario entre al chat, va a tener que tener un link de invitación.
+
+El link de invitación de cada chat no va a poder renovarse y funcionara hasta que todos los usuario de la sala de chat se desconecten.
+
+Despues de que todos los usuarios se desconecten, el link de invitación quedara inutilizable.
+
+### Dependencias del proyecto 📦
+
+Para realizar este proyecto vamos a utilizar las siguientes dependencias:
+
+- [Socket.io](https://socket.io/)
+- [Express](https://www.npmjs.com/package/express)
+- [Cors](https://www.npmjs.com/package/cors)
+- [Helmet](https://www.npmjs.com/package/helmet)
+
+```bash
+npm i cors express helmet socket.io
+```
+
+```json
+{
+    "name": "chat-in-real-time",
+    "dependencies": {
+        "cors": "^2.8.5",
+        "express": "^4.18.2",
+        "helmet": "^6.0.0",
+        "socket.io": "^4.5.2"
+    },
+    "devDependencies": {
+        "nodemon": "^2.0.20"
+    },
+    "engines": {
+        "node": "18.x"
+    }
+}
+```
+
+## Preparando la conexión para sockets
+
+En este post solamente nos vamos a centrar en el backend, lo primero que hay que hacer es crear un servidor.
+
+Vamos a crear un servidor http como normalmente hacemos con Express, pero luego vamos a pasarlo como argumento a la función createServer del modulo nativo http. ¿Por que? Para poder pasarlo como arguemento al servidor socket que vamos a crear.
+
+Al principio puede parecer todo un lio, pero es sencillo, tenemos tres servidores:
+
+- Express: En este vamos a definir las rutas
+- http.createServer: Este server va a ser el que escuche las peticiones
+- socket.io: El servidor socket al que se van a conectar nuestros usuarios
+
+```javascript
+import express from 'express'
+import { createServer } from 'http'
+import { Server } from 'socket.io'
+import helmet from 'helmet'
+import cors form 'cors'
+// Creamos la app de express
+const app = express()
+// Configuramos express
+app.use(helmet())
+app.use(cors())
+app.use(express.json())
+app.use(express.urlenconded({
+    extended: false
+}))
+// Y creamos los dos servidores que faltan
+const server = createServer(app)
+const io = new Server(server)
+
+server.listen(process.env.PORT || 3000)
+```
+
+### Los ultimos detalles 🎊
+
+Lo se, dije que no ibamos a tocar el frontend en este post, pero te mentí 😈. La verdad, es que en un proyecto como este no se puede programar el backend sin pensar en el frontend. Y tanto el front como el back van a estar en el mismo servidor, por lo que voy a agradecer bastante agregar las siguientes lineas de codigo a tu backend:
+
+```javascript
+/*
+Definimos una función para que nos devuelva la ruta del proyecto
+*/
+const getPath = () => path.dirname(fileURLToPath(import.meta.url))
+
+// Por otro lado le decimos a node que sirva archivos estaticos
+app.use(express.static(path.join(getPath(), '../client/build')));
+```
+
+Y si, tendremos que importar la libreria "path" y "url", eso ya te lo encargo a tí. La razón por la que sirvo archivos estaticos en otra carpeta es porque tendre el backend y frontend separados. Y el frontend lo haré con React. Por lo que nuestro arbol de carpetas tendría esta pinta:
+
+```shell
+- chat-in-real-time
+    - package.json
+    - server
+        - index.js
+    - client
+        - build
+        - src
+```
+
+### 🚪 Abriendo las puertas a las conexiones
+
+Lo ultimo que vamos a ver en este blog es como crear el evento más importante: El evento de conexión. Este evento se va a activar cada vez que un usuario se conecte y nos va a dar los detalles de su conexión.
+
+```javascript
+io.on("connected", (socket) => {
+    console.log("Se ha conectado alguien")
+})
+```
+
+Y para hacerlo un poco más profesional, con la libreria "uuid" vamos a asignarle un identificador único a cada socket y vamos a guardarlo en un objeto.
+
+```javascript
+const users = {}
+
+io.on("connected", (socket) => {
+    socket.id = uuid.v4()
+
+    users[socket.id] = socket;
+
+    console.log(`Se ha conectado alguien, su id es ${socket.id}`)
+})
+```

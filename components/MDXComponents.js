@@ -26,7 +26,7 @@ export function HiperLink({ children, href }){
 }
 
 export function MyLi({ children }){
-    return (<li className="list-item">{ children }</li>)
+    return (<li className="list-item text-lg text-gray-800">{ children }</li>)
 }
 
 export function MyList({ children }){
@@ -37,9 +37,9 @@ export function MyList({ children }){
 
 export function Code({ children, className }){
     let language = className.split('-')[1];
-    return (<SyntaxHighlighter language={ language } style={dracula}>
+    return (<div className="my-4"><SyntaxHighlighter language={ language } style={dracula}>
         { children }
-    </SyntaxHighlighter>)
+    </SyntaxHighlighter></div>)
 }
 
 export default {
