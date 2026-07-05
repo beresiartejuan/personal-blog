@@ -1,0 +1,127 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import { Search } from '@lucide/astro';
+
+const posts = await getCollection('blog');
+const postsData = posts
+  .filter(post => !post.data.draft)
+  .map(post => ({
+    slug: post.slug,
+    title: post.data.title,
+    description: post.data.description,
+    tags: post.data.tags || [],
+    pubDatetime: post.data.pubDatetime,
+  }));
+---
+
+<Layout title="Buscar" description="Busca artículos en el blog">
+  <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    
+    <h1 class="text-4xl font-bold text-[#F1F5FB] mb-8 tracking-tight">
+      Buscar
+    </h1>
+    
+    <!-- Search Input -->
+    <div class="relative mb-8">
+      <Search class="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#6B7280]" size={20} />
+      <input 
+        type="text" 
+        id="search-input"
+        placeholder="Buscar artículos..."
+        class="w-full pl-12 pr-4 py-4 bg-[#151A26] border border-white/10 rounded-xl text-[#F1F5FB] placeholder-[#6B7280] focus:outline-none focus:border-[#FF6B35]/50 focus:ring-1 focus:ring-[#FF6B35]/50 transition-all"
+        autocomplete="off"
+      />
+    </div>
+    
+    <!-- Results -->
+    <div id="search-results" class="space-y-4">
+      <p class="text-[#6B7280] text-center py-8">
+        Escribe para buscar artículos...
+      </p>
+    </div>
+    
+    <!-- No Results -->
+    <div id="no-results" class="hidden text-center py-8">
+      <p class="text-[#6B7280]">No se encontraron resultados.</p>
+    </div>
+
+  </div>
+</Layout>
+
+<script define:vars={{ postsData }}>
+  const searchInput = document.getElementById('search-input');
+  const searchResults = document.getElementById('search-results');
+  const noResults = document.getElementById('no-results');
+  
+  function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-ES', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  }
+  
+  function highlightMatch(text, query) {
+    if (!query) return text;
+    const regex = new RegExp(`(${query})`, 'gi');
+    return text.replace(regex, '<mark class="bg-[#FF6B35]/20 text-[#FF6B35] px-1 rounded">$1</mark>');
+  }
+  
+  function performSearch(query) {
+    const normalizedQuery = query.toLowerCase().trim();
+    
+    if (!normalizedQuery) {
+      searchResults.innerHTML = '<p class="text-[#6B7280] text-center py-8">Escribe para buscar artículos...</p>';
+      noResults.classList.add('hidden');
+      return;
+    }
+    
+    const results = postsData.filter(post => 
+      post.title.toLowerCase().includes(normalizedQuery) ||
+      post.description.toLowerCase().includes(normalizedQuery) ||
+      post.tags.some(tag => tag.toLowerCase().includes(normalizedQuery))
+    );
+    
+    if (results.length === 0) {
+      searchResults.innerHTML = '';
+      noResults.classList.remove('hidden');
+      return;
+    }
+    
+    noResults.classList.add('hidden');
+    
+    searchResults.innerHTML = results.map(post => `
+      <article class="group">
+        <a href="/blog/${post.slug}" class="block">
+          <div class="bg-[#151A26] border border-white/5 rounded-xl p-6 hover:border-[#4A90E2]/30 hover:bg-[#1E2535] transition-all">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-xs text-[#6B7280]">${formatDate(post.pubDatetime)}</span>
+            </div>
+            <h3 class="font-semibold text-[#F1F5FB] mb-2 group-hover:text-[#4A90E2] transition-colors">
+              ${highlightMatch(post.title, normalizedQuery)}
+            </h3>
+            <p class="text-sm text-[#9AA3B2]">
+              ${highlightMatch(post.description, normalizedQuery)}
+            </p>
+            <div class="flex flex-wrap gap-2 mt-3">
+              ${post.tags.map(tag => `
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[#0B0F17] text-[#9AA3B2]">
+                  #${tag}
+                </span>
+              `).join('')}
+            </div>
+          </div>
+        </a>
+      </article>
+    `).join('');
+  }
+  
+  searchInput?.addEventListener('input', (e) => {
+    performSearch(e.target.value);
+  });
+  
+  // Focus on load
+  searchInput?.focus();
+</script>
