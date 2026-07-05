@@ -3,20 +3,41 @@
 When starting the dev server, use background mode:
 
 ```
-astro dev --background
+pnpm dev --background
 ```
 
-Manage the background server with `astro dev stop`, `astro dev status`, and `astro dev logs`.
+Manage the background server with `pnpm astro dev stop`, `pnpm astro dev status`, and `pnpm astro dev logs`.
 
-## Documentation
+## Build & Deploy
 
-Full documentation: https://docs.astro.build
+- `pnpm build` - Build production site to `./dist/`
+- Deploys to Vercel via `@astrojs/vercel` adapter
+- Site URL: `https://blog.beresiarte.xyz`
 
-Consult these guides before working on related tasks:
+## Project Structure
 
-- [Adding pages, dynamic routes, or middleware](https://docs.astro.build/en/guides/routing/)
-- [Working with Astro components](https://docs.astro.build/en/basics/astro-components/)
-- [Using React, Vue, Svelte, or other framework components](https://docs.astro.build/en/guides/framework-components/)
-- [Adding or managing content](https://docs.astro.build/en/guides/content-collections/)
-- [Adding styles or using Tailwind](https://docs.astro.build/en/guides/styling/)
-- [Supporting multiple languages](https://docs.astro.build/en/guides/internationalization/)
+- `src/content/blog/` - Markdown blog posts with frontmatter schema
+- `src/content.config.ts` - Content collection schema definition
+- `src/config.ts` - Site-wide config (URL, author)
+- `src/layouts/` - Astro layout components
+- `src/styles/global.css` - Tailwind CSS entry point
+
+## Path Aliases
+
+TypeScript path aliases configured in `tsconfig.json`:
+- `@config` → `./src/config.ts`
+- `@/*` → `./src/*`
+
+## Content Collections
+
+Blog posts require frontmatter matching schema in `src/content.config.ts`:
+- `author`, `pubDatetime`, `title`, `description` (required)
+- `modDatetime`, `featured`, `draft`, `tags`, `canonicalURL` (optional)
+
+## Tech Stack
+
+- Astro 7.x with MDX support
+- Tailwind CSS 4.x via Vite plugin
+- Vercel adapter for SSR/deployment
+- date-fns for date formatting
+- motion (Framer Motion) for animations
