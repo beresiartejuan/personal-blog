@@ -1,7 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
-import { Github, Linkedin, Instagram, Mail, MapPin, Calendar, Sparkles } from '@lucide/astro';
 
 const posts = await getCollection('blog');
 const publishedPosts = posts.filter(post => !post.data.draft);
@@ -9,200 +8,130 @@ const totalPosts = publishedPosts.length;
 const uniqueTags = [...new Set(posts.flatMap(post => post.data.tags || []))];
 ---
 
-<Layout title="Sobre mí" description="Conoce más sobre Juan Beresiarte, desarrollador web y creador de contenido">
-  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+<Layout title="sobre-mi" description="Juan Beresiarte - Desarrollador web y creador de contenido">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 py-12">
     
-    <!-- Header -->
-    <header class="mb-16">
-      <div class="flex flex-col md:flex-row items-center md:items-start gap-8">
-        <!-- Photo -->
+    <!-- Prompt del header -->
+    <div class="mb-8 text-[var(--text-dim)] text-sm">
+      ~/blog/sobre-mi $
+    </div>
+
+    <!-- Información básica con foto -->
+    <section class="mb-12">
+      <div class="flex flex-col sm:flex-row gap-8 sm:gap-10 mb-6">
+        <!-- Foto de perfil interactiva -->
         <div class="shrink-0">
-          <div class="relative">
-            <div class="w-32 h-32 md:w-40 md:h-40 rounded-2xl overflow-hidden border-2 border-[#FF6B35]/30">
-              <img 
-                src="/profile_photo.jpeg" 
-                alt="Juan Beresiarte"
-                class="w-full h-full object-cover"
-              />
-            </div>
-            <div class="absolute -bottom-2 -right-2 w-8 h-8 bg-[#FF6B35] rounded-full flex items-center justify-center">
-              <Sparkles size={16} class="text-white" />
-            </div>
+          <div 
+            id="profile-photo"
+            class="w-44 h-44 sm:w-52 sm:h-52 rounded-lg overflow-hidden border border-[var(--border)] bg-[var(--bg-secondary)] cursor-pointer transition-transform duration-150 ease-out hover:scale-[1.02] active:scale-95 select-none"
+          >
+            <img 
+              src="/profile_photo.jpeg" 
+              alt="Juan Beresiarte"
+              class="w-full h-full object-cover pointer-events-none"
+            />
           </div>
         </div>
-        
+
         <!-- Info -->
-        <div class="text-center md:text-left">
-          <h1 class="text-4xl md:text-5xl font-bold text-[#F1F5FB] mb-4 tracking-tight">
+        <div class="flex-1">
+          <h1 class="text-2xl font-bold text-[var(--text-primary)] mb-2">
             Juan Beresiarte
           </h1>
           
-          <p class="text-xl text-[#9AA3B2] mb-6">
-            Desarrollador web & creador de contenido
+          <p class="text-[var(--text-secondary)] leading-relaxed mb-4">
+            Desarrollador web. Escribo sobre JavaScript, Astro, y mi viaje de aprendizaje.
           </p>
-          
-          <!-- Social Links -->
-          <div class="flex items-center justify-center md:justify-start gap-4">
-            <a 
-              href="https://github.com/beresiarte" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              class="flex items-center gap-2 px-4 py-2 rounded-full bg-[#151A26] border border-white/5 text-[#9AA3B2] hover:text-[#F1F5FB] hover:border-[#FF6B35]/30 transition-all"
-            >
-              <Github size={18} />
-              <span class="text-sm">GitHub</span>
+
+          <!-- Links -->
+          <div class="flex flex-wrap gap-4 text-sm">
+            <a href="https://github.com/beresiarte" target="_blank" rel="noopener noreferrer">
+              github
             </a>
-            
-            <a 
-              href="https://linkedin.com/in/beresiarte" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              class="flex items-center gap-2 px-4 py-2 rounded-full bg-[#151A26] border border-white/5 text-[#9AA3B2] hover:text-[#F1F5FB] hover:border-[#4A90E2]/30 transition-all"
-            >
-              <Linkedin size={18} />
-              <span class="text-sm">LinkedIn</span>
+            <a href="https://linkedin.com/in/beresiarte" target="_blank" rel="noopener noreferrer">
+              linkedin
             </a>
-            
-            <a 
-              href="https://instagram.com/beresiarte" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              class="flex items-center gap-2 px-4 py-2 rounded-full bg-[#151A26] border border-white/5 text-[#9AA3B2] hover:text-[#F1F5FB] hover:border-pink-500/30 transition-all"
-            >
-              <Instagram size={18} />
-              <span class="text-sm">Instagram</span>
+            <a href="https://instagram.com/beresiarte" target="_blank" rel="noopener noreferrer">
+              instagram
             </a>
           </div>
         </div>
       </div>
-    </header>
+    </section>
 
-    <!-- Stats -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
-      <div class="bg-[#151A26] border border-white/5 rounded-xl p-6 text-center">
-        <div class="text-3xl font-bold text-[#FF6B35] mb-1">{totalPosts}</div>
-        <div class="text-sm text-[#9AA3B2]">Artículos</div>
-      </div>
+    <!-- Stats tipo terminal -->
+    <section class="mb-12">
+      <div class="text-[var(--text-dim)] text-sm mb-4">$ stats --summary</div>
       
-      <div class="bg-[#151A26] border border-white/5 rounded-xl p-6 text-center">
-        <div class="text-3xl font-bold text-[#4A90E2] mb-1">{uniqueTags.length}</div>
-        <div class="text-sm text-[#9AA3B2]">Temas</div>
-      </div>
-      
-      <div class="bg-[#151A26] border border-white/5 rounded-xl p-6 text-center">
-        <div class="text-3xl font-bold text-[#FF6B35] mb-1">ES</div>
-        <div class="text-sm text-[#9AA3B2]">Idioma</div>
-      </div>
-      
-      <div class="bg-[#151A26] border border-white/5 rounded-xl p-6 text-center">
-        <div class="text-3xl font-bold text-[#4A90E2] mb-1">∞</div>
-        <div class="text-sm text-[#9AA3B2]">Aprendiendo</div>
-      </div>
-    </div>
-
-    <!-- About Content -->
-    <div class="space-y-12">
-      
-      <!-- Bio -->
-      <section>
-        <h2 class="text-2xl font-bold text-[#F1F5FB] mb-4 flex items-center gap-3">
-          <span class="w-8 h-0.5 bg-[#FF6B35]"></span>
-          Sobre mí
-        </h2>
-        
-        <div class="prose prose-lg prose-invert max-w-none">
-          <p>
-            ¡Hola! Soy Juan, un desarrollador web apasionado por crear cosas que viven en internet. 
-            Este blog nació como un espacio para documentar mi aprendizaje y compartir experiencias 
-            que puedan ser útiles para otros desarrolladores, especialmente aquellos que están 
-            empezando su viaje.
-          </p>
-          
-          <p>
-            Me especializo en el ecosistema JavaScript moderno, con un cariño especial por 
-            <strong>Astro</strong>, <strong>React</strong> y todo lo relacionado con 
-            performance web. Creo firmemente que la mejor manera de aprender es enseñando, 
-            así que aquí encontrarás desde tutoriales técnicos hasta reflexiones sobre 
-            el mundo del desarrollo.
-          </p>
-          
-          <p>
-            Cuando no estoy codeando, probablemente estoy leyendo sobre nuevas tecnologías, 
-            contribuyendo a proyectos open source, o simplemente disfrutando de un buen café 
-            mientras resuelvo problemas de código.
-          </p>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+        <div class="border border-[var(--border)] rounded px-4 py-3">
+          <div class="text-[var(--accent-orange)] font-semibold">{totalPosts}</div>
+          <div class="text-[var(--text-dim)]">posts</div>
         </div>
-      </section>
-
-      <!-- Philosophy -->
-      <section class="bg-[#151A26] border border-white/5 rounded-xl p-8">
-        <blockquote class="text-xl md:text-2xl text-[#9AA3B2] italic leading-relaxed border-l-4 border-[#FF6B35] pl-6">
-          "El mejor modo de predecir el futuro es inventarlo."
-          <cite class="block mt-4 text-base text-[#6B7280] not-italic">— Alan Kay</cite>
-        </blockquote>
         
-        <p class="mt-6 text-[#9AA3B2]">
-          Esta frase resume mi filosofía: en lugar de esperar a ver qué pasa, prefiero 
-          crear, experimentar y construir el futuro que quiero ver. Este blog es parte 
-          de ese proceso de inventar, compartir y crecer.
-        </p>
-      </section>
-
-      <!-- What I Write About -->
-      <section>
-        <h2 class="text-2xl font-bold text-[#F1F5FB] mb-6 flex items-center gap-3">
-          <span class="w-8 h-0.5 bg-[#4A90E2]"></span>
-          Qué escribo
-        </h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
-          <div class="bg-[#151A26] border border-white/5 rounded-xl p-6 hover:border-[#FF6B35]/30 transition-all">
-            <h3 class="font-semibold text-[#F1F5FB] mb-2">🚀 Tutoriales Prácticos</h3>
-            <p class="text-sm text-[#9AA3B2]">Guías paso a paso sobre tecnologías web modernas, desde JavaScript básico hasta frameworks avanzados.</p>
-          </div>
-          
-          <div class="bg-[#151A26] border border-white/5 rounded-xl p-6 hover:border-[#4A90E2]/30 transition-all">
-            <h3 class="font-semibold text-[#F1F5FB] mb-2">💡 Experiencias Reales</h3>
-            <p class="text-sm text-[#9AA3B2]">Lecciones aprendidas de proyectos reales, errores comunes y cómo evitarlos.</p>
-          </div>
-          
-          <div class="bg-[#151A26] border border-white/5 rounded-xl p-6 hover:border-[#FF6B35]/30 transition-all">
-            <h3 class="font-semibold text-[#F1F5FB] mb-2">🔧 Herramientas y Librerías</h3>
-            <p class="text-sm text-[#9AA3B2]">Descubrimientos de herramientas que hacen la vida del desarrollador más fácil.</p>
-          </div>
-          
-          <div class="bg-[#151A26] border border-white/5 rounded-xl p-6 hover:border-[#4A90E2]/30 transition-all">
-            <h3 class="font-semibold text-[#F1F5FB] mb-2">🌱 Aprendizaje Continuo</h3>
-            <p class="text-sm text-[#9AA3B2]">Reflexiones sobre el proceso de aprender, crecer y mejorar como desarrollador.</p>
-          </div>
-          
+        <div class="border border-[var(--border)] rounded px-4 py-3">
+          <div class="text-[var(--accent-blue)] font-semibold">{uniqueTags.length}</div>
+          <div class="text-[var(--text-dim)]">tags</div>
         </div>
-      </section>
-
-      <!-- Contact CTA -->
-      <section class="text-center py-12 border-t border-white/5">
-        <h2 class="text-2xl font-bold text-[#F1F5FB] mb-4">
-          ¿Quieres conectar?
-        </h2>
         
-        <p class="text-[#9AA3B2] mb-8 max-w-xl mx-auto">
-          Siempre estoy abierto a conversar sobre tecnología, colaborar en proyectos interesantes 
-          o simplemente intercambiar ideas. No dudes en contactarme.
+        <div class="border border-[var(--border)] rounded px-4 py-3">
+          <div class="text-[var(--text-primary)] font-semibold">ES</div>
+          <div class="text-[var(--text-dim)]">idioma</div>
+        </div>
+        
+        <div class="border border-[var(--border)] rounded px-4 py-3">
+          <div class="text-[var(--text-primary)] font-semibold">∞</div>
+          <div class="text-[var(--text-dim)]">aprendiendo</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bio -->
+    <section class="mb-12">
+      <div class="text-[var(--text-dim)] text-sm mb-4">$ cat bio.txt</div>
+      
+      <div class="text-[var(--text-secondary)] leading-relaxed space-y-4">
+        <p>
+          Me especializo en el ecosistema JavaScript moderno. Me interesa Astro, React 
+          y todo lo relacionado con performance web.
         </p>
         
-        <a 
-          href="https://linkedin.com/in/beresiarte" 
-          target="_blank"
-          rel="noopener noreferrer" 
-          class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#FF6B35] text-white font-medium hover:bg-[#FF6B35]/90 transition-colors"
-        >
-          <Linkedin size={20} />
-          Conectar en LinkedIn
-        </a>
-      </section>
+        <p>
+          Creo que la mejor manera de aprender es enseñando. Este blog es mi espacio 
+          para documentar lo que aprendo y compartirlo.
+        </p>
+        
+        <p>
+          Cuando no estoy codeando, probablemente estoy leyendo sobre nuevas tecnologías 
+          o disfrutando de un buen café.
+        </p>
+      </div>
+    </section>
 
-    </div>
+    <!-- Quote -->
+    <section>
+      <div class="text-[var(--text-dim)] text-sm mb-4">$ echo $PHILOSOPHY</div>
+      
+      <blockquote class="border-l-2 border-[var(--accent-orange)] pl-4 text-[var(--text-secondary)] italic">
+        "El mejor modo de predecir el futuro es inventarlo."
+        <cite class="block mt-2 text-[var(--text-dim)] not-italic text-sm">
+          — Alan Kay
+        </cite>
+      </blockquote>
+    </section>
 
   </div>
+
+  <script>
+    const photo = document.getElementById('profile-photo');
+    
+    photo?.addEventListener('click', () => {
+      // Animación de "press" al hacer click
+      photo.style.transform = 'scale(0.92)';
+      
+      setTimeout(() => {
+        photo.style.transform = '';
+      }, 150);
+    });
+  </script>
 </Layout>
