@@ -1,0 +1,123 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection, getEntry } from 'astro:content';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { Calendar, Clock, ArrowLeft, Tag } from '@lucide/astro';
+
+// Static paths
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map(post => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await post.render();
+
+// Get related posts (same tags)
+const allPosts = await getCollection('blog');
+const relatedPosts = allPosts
+  .filter(p => 
+    p.slug !== post.slug && 
+    !p.data.draft &&
+    p.data.tags?.some(tag => post.data.tags?.includes(tag))
+  )
+  .slice(0, 3);
+---
+
+<Layout title={post.data.title} description={post.data.description}>
+  <article class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    
+    <!-- Back Link -->
+    <a href="/blog" class="inline-flex items-center gap-2 text-sm text-[#9AA3B2] hover:text-[#FF6B35] transition-colors mb-8">
+      <ArrowLeft size={16} />
+      Volver al blog
+    </a>
+
+    <!-- Header -->
+    <header class="mb-12">
+      <!-- Tags -->
+      <div class="flex flex-wrap gap-2 mb-6">
+        {(post.data.tags || []).map(tag => (
+          <a href={`/tag/${tag}`} class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-[#FF6B35]/10 text-[#FF6B35] border border-[#FF6B35]/20 hover:bg-[#FF6B35]/20 transition-all">
+            <Tag size={12} />
+            {tag}
+          </a>
+        ))}
+      </div>
+      
+      <!-- Title -->
+      <h1 class="text-3xl md:text-5xl font-bold text-[#F1F5FB] mb-6 tracking-tight leading-tight">
+        {post.data.title}
+      </h1>
+      
+      <!-- Meta -->
+      <div class="flex flex-wrap items-center gap-4 text-sm text-[#6B7280]">
+        <div class="flex items-center gap-2">
+          <Calendar size={14} />
+          <span>{format(new Date(post.data.pubDatetime), 'd MMMM yyyy', { locale: es })}</span>
+        </div>
+        {post.data.modDatetime && (
+          <div class="flex items-center gap-2">
+            <Clock size={14} />
+            <span>Actualizado {format(new Date(post.data.modDatetime), 'd MMM yyyy', { locale: es })}</span>
+          </div>
+        )}
+      </div>
+    </header>
+
+    <!-- Content -->
+    <div class="prose prose-lg prose-invert max-w-none">
+      <Content />
+    </div>
+
+    <!-- Divider -->
+    <div class="border-t border-white/5 my-16"></div>
+
+    <!-- Author -->
+    <div class="bg-[#151A26] border border-white/5 rounded-xl p-6 mb-12">
+      <div class="flex items-start gap-4">
+        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[#FF6B35] to-[#4A90E2] flex items-center justify-center text-white font-bold text-lg shrink-0">
+          JB
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-[#F1F5FB] mb-1">Juan Beresiarte</h3>
+          <p class="text-sm text-[#9AA3B2] mb-3">
+            Desarrollador web apasionado por compartir conocimiento y experiencias. 
+            Escribo sobre JavaScript, Astro, y mi viaje de aprendizaje continuo.
+          </p>
+          <a href="/sobre-mi" class="text-sm text-[#FF6B35] hover:text-[#4A90E2] transition-colors">
+            Más sobre mí →
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Related Posts -->
+    {relatedPosts.length > 0 && (
+      <section>
+        <h2 class="text-2xl font-bold text-[#F1F5FB] mb-6">Artículos relacionados</h2>
+        <div class="space-y-4">
+          {relatedPosts.map(relatedPost => (
+            <article>
+              <a href={`/blog/${relatedPost.slug}`} class="block group">
+                <div class="bg-[#151A26] border border-white/5 rounded-lg p-4 hover:border-[#4A90E2]/30 transition-all">
+                  <h3 class="font-medium text-[#F1F5FB] group-hover:text-[#4A90E2] transition-colors mb-2">
+                    {relatedPost.data.title}
+                  </h3>
+                  <p class="text-sm text-[#9AA3B2] line-clamp-2">
+                    {relatedPost.data.description}
+                  </p>
+                </div>
+              </a>
+            </article>
+          ))}
+        </div>
+      </section>
+    )}
+
+  </article>
+</Layout>
