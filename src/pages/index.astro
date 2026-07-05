@@ -1,17 +1,159 @@
 ---
+import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { ArrowRight, Sparkles, BookOpen, Hash } from '@lucide/astro';
 
+// Obtener posts
+const allPosts = await getCollection('blog');
+const featuredPosts = allPosts.filter(post => post.data.featured && !post.data.draft);
+const regularPosts = allPosts.filter(post => !post.data.featured && !post.data.draft);
+
+// Ordenar por fecha
+const sortedFeatured = featuredPosts.sort((a, b) => new Date(b.data.pubDatetime).getTime() - new Date(a.data.pubDatetime).getTime());
+const sortedRegular = regularPosts.sort((a, b) => new Date(b.data.pubDatetime).getTime() - new Date(a.data.pubDatetime).getTime());
+
+// Combinar: destacados primero, luego regulares
+const posts = [...sortedFeatured, ...sortedRegular].slice(0, 7);
+
+// Obtener todos los tags únicos
+const allTags = [...new Set(allPosts.flatMap(post => post.data.tags || []))];
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout description="Blog personal sobre desarrollo web, JavaScript, Astro y experiencias de aprendizaje">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+    
+    <!-- Hero Section -->
+    <section class="mb-20 md:mb-32 text-center">
+      <div class="max-w-3xl mx-auto">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#FF6B35]/10 border border-[#FF6B35]/20 mb-8">
+          <Sparkles size={16} class="text-[#FF6B35]" />
+          <span class="text-sm text-[#FF6B35] font-medium">Blog personal</span>
+        </div>
+        
+        <h1 class="text-4xl md:text-6xl font-bold text-[#F1F5FB] mb-8 leading-tight tracking-tight">
+          Pensamientos, experiencias y <span class="text-[#FF6B35]">código</span>
+        </h1>
+        
+        <blockquote class="text-xl md:text-2xl text-[#9AA3B2] italic leading-relaxed border-l-0 pl-0">
+          "El mejor modo de predecir el futuro es inventarlo."
+          <cite class="block mt-3 text-base text-[#6B7280] not-italic">— Alan Kay</cite>
+        </blockquote>
+      </div>
+    </section>
+
+    <!-- Featured Post (si existe) -->
+    {sortedFeatured.length > 0 && (
+      <section class="mb-16">
+        <div class="flex items-center gap-3 mb-8">
+          <Sparkles size={20} class="text-[#FF6B35]" />
+          <h2 class="text-xl font-semibold text-[#F1F5FB]">Destacado</h2>
+        </div>
+        
+        <article class="group relative">
+          <a href={`/blog/${sortedFeatured[0].slug}`} class="block">
+            <div class="bg-[#151A26] border border-white/5 rounded-2xl p-8 md:p-12 hover:border-[#FF6B35]/30 transition-all duration-500">
+              <div class="flex flex-col md:flex-row md:items-center gap-4 md:gap-6 mb-6">
+                <span class="inline-flex items-center gap-1.5 text-xs font-medium text-[#FF6B35] uppercase tracking-wider">
+                  <Sparkles size={12} />
+                  Destacado
+                </span>
+                <span class="text-sm text-[#6B7280]">
+                  {format(new Date(sortedFeatured[0].data.pubDatetime), 'd MMMM yyyy', { locale: es })}
+                </span>
+              </div>
+              
+              <h3 class="text-2xl md:text-4xl font-bold text-[#F1F5FB] mb-4 group-hover:text-[#FF6B35] transition-colors">
+                {sortedFeatured[0].data.title}
+              </h3>
+              
+              <p class="text-lg text-[#9AA3B2] mb-6 max-w-3xl">
+                {sortedFeatured[0].data.description}
+              </p>
+              
+              <div class="flex items-center gap-2 text-[#FF6B35] font-medium group-hover:gap-3 transition-all">
+                <span>Leer artículo</span>
+                <ArrowRight size={18} />
+              </div>
+            </div>
+          </a>
+        </article>
+      </section>
+    )}
+
+    <!-- Bento Grid de Posts -->
+    <section class="mb-20">
+      <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-3">
+          <BookOpen size={20} class="text-[#4A90E2]" />
+          <h2 class="text-xl font-semibold text-[#F1F5FB]">Últimos artículos</h2>
+        </div>
+        <a href="/blog" class="text-sm text-[#9AA3B2] hover:text-[#FF6B35] transition-colors flex items-center gap-1">
+          Ver todos
+          <ArrowRight size={14} />
+        </a>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 stagger-children">
+        {posts.map((post, index) => (
+          <article class={`group animate-fade-in-up ${index === 0 ? 'md:col-span-2 lg:col-span-2' : ''}`}>
+            <a href={`/blog/${post.slug}`} class="block h-full">
+              <div class="h-full bg-[#151A26] border border-white/5 rounded-xl p-6 hover:border-[#4A90E2]/30 hover:bg-[#1E2535] transition-all duration-300">
+                <div class="flex items-center gap-3 mb-4">
+                  <span class="text-xs text-[#6B7280]">
+                    {format(new Date(post.data.pubDatetime), 'd MMM yyyy', { locale: es })}
+                  </span>
+                  {post.data.featured && (
+                    <span class="inline-flex items-center gap-1 text-xs text-[#FF6B35]">
+                      <Sparkles size={12} />
+                      Destacado
+                    </span>
+                  )}
+                </div>
+                
+                <h3 class={`font-semibold text-[#F1F5FB] mb-3 group-hover:text-[#4A90E2] transition-colors ${index === 0 ? 'text-xl md:text-2xl' : 'text-lg'}`}>
+                  {post.data.title}
+                </h3>
+                
+                <p class={`text-[#9AA3B2] mb-4 line-clamp-2 ${index === 0 ? 'text-base' : 'text-sm'}`}>
+                  {post.data.description}
+                </p>
+                
+                <div class="flex flex-wrap gap-2">
+                  {(post.data.tags || ['others']).slice(0, 3).map(tag => (
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-[#0B0F17] text-[#9AA3B2] border border-white/5">
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </a>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <!-- Tags Section -->
+    {allTags.length > 0 && (
+      <section class="border-t border-white/5 pt-16">
+        <div class="flex items-center gap-3 mb-6">
+          <Hash size={20} class="text-[#9AA3B2]" />
+          <h2 class="text-xl font-semibold text-[#F1F5FB]">Explorar por temas</h2>
+        </div>
+        
+        <div class="flex flex-wrap gap-3">
+          {allTags.map(tag => (
+            <a 
+              href={`/tag/${tag}`}
+              class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#151A26] border border-white/5 text-sm text-[#9AA3B2] hover:border-[#FF6B35]/30 hover:text-[#FF6B35] transition-all"
+            >
+              #{tag}
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+  </div>
+</Layout>
