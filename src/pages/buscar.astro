@@ -1,49 +1,64 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
-import { Search } from '@lucide/astro';
 
 const posts = await getCollection('blog');
 const postsData = posts
   .filter(post => !post.data.draft)
   .map(post => ({
-    slug: post.slug,
+    slug: post.id,
     title: post.data.title,
     description: post.data.description,
     tags: post.data.tags || [],
     pubDatetime: post.data.pubDatetime,
+    body: post.body || '',
   }));
+
+// Función para calcular tiempo de lectura
+function getReadingTime(body: string): number {
+  const words = body.split(/\s+/).length;
+  return Math.ceil(words / 200);
+}
+
+function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toISOString().split('T')[0];
+}
 ---
 
-<Layout title="Buscar" description="Busca artículos en el blog">
-  <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+<Layout title="buscar" description="Buscar artículos en el blog">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 py-12">
     
-    <h1 class="text-4xl font-bold text-[#F1F5FB] mb-8 tracking-tight">
-      Buscar
-    </h1>
-    
-    <!-- Search Input -->
-    <div class="relative mb-8">
-      <Search class="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#6B7280]" size={20} />
-      <input 
-        type="text" 
-        id="search-input"
-        placeholder="Buscar artículos..."
-        class="w-full pl-12 pr-4 py-4 bg-[#151A26] border border-white/10 rounded-xl text-[#F1F5FB] placeholder-[#6B7280] focus:outline-none focus:border-[#FF6B35]/50 focus:ring-1 focus:ring-[#FF6B35]/50 transition-all"
-        autocomplete="off"
-      />
+    <!-- Prompt del header -->
+    <div class="mb-8 text-[var(--text-dim)] text-sm">
+      ~/blog/buscar $
+    </div>
+
+    <!-- Search input -->
+    <div class="mb-8">
+      <div class="flex items-center gap-2 border border-[var(--border)] rounded bg-[var(--bg-secondary)] px-4 py-3">
+        <span class="text-[var(--text-dim)]">></span>
+        <input 
+          type="text" 
+          id="search-input"
+          placeholder="buscar..."
+          class="flex-1 bg-transparent border-none outline-none text-[var(--text-primary)] placeholder-[var(--text-dim)]"
+          autocomplete="off"
+          autofocus
+        />
+      </div>
     </div>
     
     <!-- Results -->
-    <div id="search-results" class="space-y-4">
-      <p class="text-[#6B7280] text-center py-8">
+    <div id="search-results" class="space-y-0">
+      <p class="text-[var(--text-dim)] text-sm py-8">
         Escribe para buscar artículos...
       </p>
     </div>
     
     <!-- No Results -->
-    <div id="no-results" class="hidden text-center py-8">
-      <p class="text-[#6B7280]">No se encontraron resultados.</p>
+    <div id="no-results" class="hidden">
+      <p class="text-[var(--text-dim)] text-sm py-8">No se encontraron resultados.</p>
     </div>
 
   </div>
@@ -56,24 +71,25 @@ const postsData = posts
   
   function formatDate(dateString) {
     const date = new Date(dateString);
-    return date.toLocaleDateString('es-ES', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    });
+    return date.toISOString().split('T')[0];
+  }
+  
+  function getReadingTime(body) {
+    const words = body.split(/\s+/).length;
+    return Math.ceil(words / 200);
   }
   
   function highlightMatch(text, query) {
     if (!query) return text;
     const regex = new RegExp(`(${query})`, 'gi');
-    return text.replace(regex, '<mark class="bg-[#FF6B35]/20 text-[#FF6B35] px-1 rounded">$1</mark>');
+    return text.replace(regex, '<span class="text-[var(--accent-orange)]">$1</span>');
   }
   
   function performSearch(query) {
     const normalizedQuery = query.toLowerCase().trim();
     
     if (!normalizedQuery) {
-      searchResults.innerHTML = '<p class="text-[#6B7280] text-center py-8">Escribe para buscar artículos...</p>';
+      searchResults.innerHTML = '<p class="text-[var(--text-dim)] text-sm py-8">Escribe para buscar artículos...</p>';
       noResults.classList.add('hidden');
       return;
     }
@@ -92,30 +108,32 @@ const postsData = posts
     
     noResults.classList.add('hidden');
     
-    searchResults.innerHTML = results.map(post => `
-      <article class="group">
-        <a href="/blog/${post.slug}" class="block">
-          <div class="bg-[#151A26] border border-white/5 rounded-xl p-6 hover:border-[#4A90E2]/30 hover:bg-[#1E2535] transition-all">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="text-xs text-[#6B7280]">${formatDate(post.pubDatetime)}</span>
-            </div>
-            <h3 class="font-semibold text-[#F1F5FB] mb-2 group-hover:text-[#4A90E2] transition-colors">
+    searchResults.innerHTML = results.map(post => {
+      const readingTime = getReadingTime(post.body);
+      return `
+        <article class="row-terminal group">
+          <a href="/blog/${post.slug}" class="contents">
+            <span class="post-meta w-28 shrink-0">
+              ${formatDate(post.pubDatetime)}
+            </span>
+            
+            <span class="row-title flex-1 text-[var(--text-primary)] transition-colors">
               ${highlightMatch(post.title, normalizedQuery)}
-            </h3>
-            <p class="text-sm text-[#9AA3B2]">
-              ${highlightMatch(post.description, normalizedQuery)}
-            </p>
-            <div class="flex flex-wrap gap-2 mt-3">
-              ${post.tags.map(tag => `
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[#0B0F17] text-[#9AA3B2]">
-                  #${tag}
-                </span>
-              `).join('')}
-            </div>
-          </div>
-        </a>
-      </article>
-    `).join('');
+            </span>
+            
+            <span class="hidden sm:flex gap-2 shrink-0">
+              ${post.tags.slice(0, 3).map(tag => 
+                `<span class="tag">#${tag}</span>`
+              ).join('')}
+            </span>
+            
+            <span class="post-meta w-16 text-right shrink-0 hidden sm:block">
+              ${readingTime} min
+            </span>
+          </a>
+        </article>
+      `;
+    }).join('');
   }
   
   searchInput?.addEventListener('input', (e) => {
