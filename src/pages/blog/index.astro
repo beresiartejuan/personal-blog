@@ -1,109 +1,93 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
-import { Calendar, Clock, Sparkles } from '@lucide/astro';
 
 const allPosts = await getCollection('blog');
 const posts = allPosts
   .filter(post => !post.data.draft)
   .sort((a, b) => new Date(b.data.pubDatetime).getTime() - new Date(a.data.pubDatetime).getTime());
 
-// Obtener todos los tags
-const allTags = [...new Set(allPosts.flatMap(post => post.data.tags || []))];
+// Obtener todos los tags únicos
+const allTags = [...new Set(allPosts.flatMap(post => post.data.tags || []))].sort();
+
+// Función para formatear fecha YYYY-MM-DD
+function formatDate(date: Date): string {
+  return date.toISOString().split('T')[0];
+}
+
+// Calcular tiempo de lectura aproximado
+function getReadingTime(body: string): number {
+  const words = body.split(/\s+/).length;
+  return Math.ceil(words / 200);
+}
 ---
 
-<Layout title="Blog" description="Todos los artículos sobre desarrollo web, JavaScript, Astro y más">
-  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+<Layout title="posts" description="Todos los artículos sobre desarrollo web, JavaScript y más">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 py-12">
     
-    <!-- Header -->
-    <header class="mb-12">
-      <h1 class="text-4xl md:text-5xl font-bold text-[#F1F5FB] mb-4 tracking-tight">
-        Blog
-      </h1>
-      <p class="text-lg text-[#9AA3B2]">
-        Reflexiones, tutoriales y aprendizajes sobre desarrollo web y tecnología.
-      </p>
-    </header>
+    <!-- Prompt del header -->
+    <div class="mb-12 text-[var(--text-dim)] text-sm">
+      ~/blog/posts $
+    </div>
 
-    <!-- Filters -->
+    <!-- Tags filter -->
     {allTags.length > 0 && (
-      <div class="mb-12">
-        <div class="flex flex-wrap gap-2">
+      <div class="mb-8 flex flex-wrap gap-3">
+        <a 
+          href="/blog" 
+          class="text-[var(--accent-orange)] text-sm border-b border-[var(--accent-orange)] pb-0.5"
+        >
+          todos
+        </a>
+        {allTags.map(tag => (
           <a 
-            href="/blog"
-            class="inline-flex items-center px-3 py-1.5 rounded-full text-sm bg-[#FF6B35] text-white font-medium"
+            href={`/tag/${tag}`}
+            class="text-[var(--text-secondary)] hover:text-[var(--accent-orange)] text-sm transition-colors"
           >
-            Todos
+            #{tag}
           </a>
-          {allTags.map(tag => (
-            <a 
-              href={`/tag/${tag}`}
-              class="inline-flex items-center px-3 py-1.5 rounded-full text-sm bg-[#151A26] text-[#9AA3B2] border border-white/5 hover:border-[#FF6B35]/30 hover:text-[#FF6B35] transition-all"
-            >
-              #{tag}
-            </a>
-          ))}
-        </div>
+        ))}
       </div>
     )}
 
-    <!-- Posts List -->
-    <div class="space-y-6">
-      {posts.map((post, index) => (
-        <article class="group">
-          <a href={`/blog/${post.slug}`} class="block">
-            <div class="bg-[#151A26] border border-white/5 rounded-xl p-6 hover:border-[#4A90E2]/30 hover:bg-[#1E2535] transition-all duration-300">
-              <div class="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
-                
-                <!-- Date -->
-                <div class="flex items-center gap-2 text-sm text-[#6B7280] md:w-32 shrink-0">
-                  <Calendar size={14} />
-                  <span>{format(new Date(post.data.pubDatetime), 'd MMM yyyy', { locale: es })}</span>
-                </div>
-                
-                <!-- Content -->
-                <div class="flex-1">
-                  <div class="flex items-center gap-3 mb-2">
-                    <h2 class="text-xl font-semibold text-[#F1F5FB] group-hover:text-[#4A90E2] transition-colors">
-                      {post.data.title}
-                    </h2>
-                    {post.data.featured && (
-                      <Sparkles size={16} class="text-[#FF6B35]" />
-                    )}
-                  </div>
-                  
-                  <p class="text-[#9AA3B2] mb-3">
-                    {post.data.description}
-                  </p>
-                  
-                  <div class="flex flex-wrap gap-2">
-                    {(post.data.tags || []).map(tag => (
-                      <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[#0B0F17] text-[#9AA3B2]">
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                
-                <!-- Arrow -->
-                <div class="hidden md:flex items-center justify-center w-10 h-10 rounded-full bg-[#0B0F17] text-[#6B7280] group-hover:bg-[#FF6B35]/10 group-hover:text-[#FF6B35] transition-all">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" class="transform group-hover:translate-x-0.5 transition-transform">
-                    <path d="M6 3L11 8L6 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </a>
-        </article>
-      ))}
+    <!-- Lista de posts tipo terminal -->
+    <div class="space-y-0">
+      {posts.map((post) => {
+        const readingTime = getReadingTime(post.body || '');
+        return (
+          <article class="row-terminal group">
+            <a href={`/blog/${post.id}`} class="contents">
+              <!-- Fecha -->
+              <span class="post-meta">
+                {formatDate(post.data.pubDatetime)}
+              </span>
+              
+              <!-- Título -->
+              <span class="row-title text-[var(--text-primary)] transition-colors">
+                {post.data.title}
+              </span>
+              
+              <!-- Tags -->
+              <span class="hidden sm:flex gap-2">
+                {(post.data.tags || []).slice(0, 3).map(tag => (
+                  <span class="tag">{tag}</span>
+                ))}
+              </span>
+              
+              <!-- Tiempo de lectura -->
+              <span class="post-meta text-right hidden sm:block">
+                {readingTime} min
+              </span>
+            </a>
+          </article>
+        );
+      })}
     </div>
 
-    <!-- Empty State -->
+    <!-- Empty state -->
     {posts.length === 0 && (
-      <div class="text-center py-16">
-        <p class="text-[#6B7280]">No hay artículos publicados aún.</p>
+      <div class="text-[var(--text-dim)] text-sm py-8">
+        No hay posts publicados todavía.
       </div>
     )}
 
