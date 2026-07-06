@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
+import { SITE, ROUTES, TERMINAL_PROMPTS, CONTENT, MESSAGES, NAV_LABELS, formatDateISO, getReadingTime } from '../config';
 
 const posts = await getCollection('blog');
 const postsData = posts
@@ -13,25 +14,14 @@ const postsData = posts
     pubDatetime: post.data.pubDatetime,
     body: post.body || '',
   }));
-
-// Función para calcular tiempo de lectura
-function getReadingTime(body: string): number {
-  const words = body.split(/\s+/).length;
-  return Math.ceil(words / 200);
-}
-
-function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  return date.toISOString().split('T')[0];
-}
 ---
 
-<Layout title="buscar" description="Buscar artículos en el blog">
+<Layout title="buscar" description={`Buscar artículos en el blog | ${SITE.title}`}>
   <div class="max-w-3xl mx-auto px-4 sm:px-6 py-12">
     
     <!-- Prompt del header -->
     <div class="mb-8 text-[var(--text-dim)] text-sm">
-      ~/blog/buscar $
+      {TERMINAL_PROMPTS.search}
     </div>
 
     <!-- Search input -->
@@ -52,19 +42,21 @@ function formatDate(dateString: string): string {
     <!-- Results -->
     <div id="search-results" class="space-y-0">
       <p class="text-[var(--text-dim)] text-sm py-8">
-        Escribe para buscar artículos...
+        {MESSAGES.searchPrompt}
       </p>
     </div>
     
     <!-- No Results -->
     <div id="no-results" class="hidden">
-      <p class="text-[var(--text-dim)] text-sm py-8">No se encontraron resultados.</p>
+      <p class="text-[var(--text-dim)] text-sm py-8">{MESSAGES.emptySearch}</p>
     </div>
 
   </div>
 </Layout>
 
-<script define:vars={{ postsData }}>
+<script is:inline data-posts-data={JSON.stringify(postsData)}>
+  const postsData = JSON.parse(document.currentScript.dataset.postsData);
+  
   const searchInput = document.getElementById('search-input');
   const searchResults = document.getElementById('search-results');
   const noResults = document.getElementById('no-results');

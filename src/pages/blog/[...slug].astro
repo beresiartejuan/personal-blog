@@ -3,6 +3,7 @@ import Layout from '../../layouts/Layout.astro';
 import { getCollection, render } from 'astro:content';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { SITE, ROUTES, NAV_LABELS, CONTENT, formatDateISO, getReadingTime } from '../../config';
 
 // Static paths
 export async function getStaticPaths() {
@@ -26,12 +27,6 @@ const currentIndex = sortedPosts.findIndex(p => p.id === post.id);
 const prevPost = currentIndex < sortedPosts.length - 1 ? sortedPosts[currentIndex + 1] : null;
 const nextPost = currentIndex > 0 ? sortedPosts[currentIndex - 1] : null;
 
-// Calcular tiempo de lectura
-function getReadingTime(body: string): number {
-  const words = body.split(/\s+/).length;
-  return Math.ceil(words / 200);
-}
-
 const readingTime = getReadingTime(post.body || '');
 ---
 
@@ -42,7 +37,7 @@ const readingTime = getReadingTime(post.body || '');
     <header class="mb-8">
       <!-- Fecha, tags y tiempo de lectura -->
       <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mb-6 text-sm text-[var(--text-secondary)]">
-        <span>{format(new Date(post.data.pubDatetime), 'yyyy-MM-dd')}</span>
+        <span>{format(new Date(post.data.pubDatetime), CONTENT.dateFormat)}</span>
         <span class="text-[var(--text-dim)]">·</span>
         
         <span>{readingTime} min lectura</span>
@@ -50,7 +45,7 @@ const readingTime = getReadingTime(post.body || '');
         {post.data.modDatetime && (
           <>
             <span class="text-[var(--text-dim)]">·</span>
-            <span>actualizado {format(new Date(post.data.modDatetime), 'yyyy-MM-dd')}</span>
+            <span>actualizado {format(new Date(post.data.modDatetime), CONTENT.dateFormat)}</span>
           </>
         )}
       </div>
@@ -86,19 +81,19 @@ const readingTime = getReadingTime(post.body || '');
     <nav class="nav-posts">
       <div>
         {prevPost && (
-          <a href={`/blog/${prevPost.id}`} class="flex items-center gap-2">
+          <a href={`${ROUTES.posts}/${prevPost.id}`} class="flex items-center gap-2">
             <span>←</span>
             <span class="hidden sm:inline">{prevPost.data.title}</span>
-            <span class="sm:hidden">anterior</span>
+            <span class="sm:hidden">{NAV_LABELS.previous}</span>
           </a>
         )}
       </div>
       
       <div>
         {nextPost && (
-          <a href={`/blog/${nextPost.id}`} class="flex items-center gap-2">
+          <a href={`${ROUTES.posts}/${nextPost.id}`} class="flex items-center gap-2">
             <span class="hidden sm:inline">{nextPost.data.title}</span>
-            <span class="sm:hidden">siguiente</span>
+            <span class="sm:hidden">{NAV_LABELS.next}</span>
             <span>→</span>
           </a>
         )}

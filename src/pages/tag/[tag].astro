@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
+import { SITE, ROUTES, NAV_LABELS, TERMINAL_PROMPTS, CONTENT, MESSAGES, formatDateISO, getReadingTime } from '../../config';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
@@ -24,25 +25,14 @@ const posts = allPosts
 
 // Get all tags for filter
 const allTags = [...new Set(allPosts.flatMap(post => post.data.tags || []))].sort();
-
-// Función para formatear fecha YYYY-MM-DD
-function formatDate(date: Date): string {
-  return date.toISOString().split('T')[0];
-}
-
-// Calcular tiempo de lectura aproximado
-function getReadingTime(body: string): number {
-  const words = body.split(/\s+/).length;
-  return Math.ceil(words / 200);
-}
 ---
 
-<Layout title={`tag/${tag}`} description={`Artículos etiquetados con #${tag}`}>
+<Layout title={`tag/${tag}`} description={`Artículos etiquetados con #${tag} | ${SITE.title}`}>
   <div class="max-w-3xl mx-auto px-4 sm:px-6 py-12">
     
     <!-- Prompt del header -->
     <div class="mb-4 text-[var(--text-dim)] text-sm">
-      ~/blog/tag/{tag} $
+      {TERMINAL_PROMPTS.tag(tag)}
     </div>
 
     <!-- Header -->
@@ -60,10 +50,10 @@ function getReadingTime(body: string): number {
     {allTags.length > 0 && (
       <div class="mb-8 flex flex-wrap gap-3">
         <a 
-          href="/blog" 
+          href={ROUTES.posts}
           class="text-[var(--text-secondary)] hover:text-[var(--accent-orange)] text-sm transition-colors"
         >
-          todos
+          {NAV_LABELS.all}
         </a>
         {allTags.filter(t => t !== tag).map(otherTag => (
           <a 
@@ -82,10 +72,10 @@ function getReadingTime(body: string): number {
         const readingTime = getReadingTime(post.body || '');
         return (
           <article class="row-terminal group">
-            <a href={`/blog/${post.id}`} class="contents">
+            <a href={`${ROUTES.posts}/${post.id}`} class="contents">
               <!-- Fecha -->
               <span class="post-meta w-28 shrink-0">
-                {formatDate(post.data.pubDatetime)}
+                {formatDateISO(post.data.pubDatetime)}
               </span>
               
               <!-- Título -->
@@ -95,7 +85,7 @@ function getReadingTime(body: string): number {
               
               <!-- Tags destacando el actual -->
               <span class="hidden sm:flex gap-2 shrink-0">
-                {(post.data.tags || []).slice(0, 3).map(t => (
+                {(post.data.tags || []).slice(0, CONTENT.maxTagsInList).map(t => (
                   <span class:list={[
                     "text-xs",
                     t === tag ? "text-[var(--accent-orange)]" : "text-[var(--accent-blue)]"
@@ -118,14 +108,14 @@ function getReadingTime(body: string): number {
     <!-- Empty state -->
     {posts.length === 0 && (
       <div class="text-[var(--text-dim)] text-sm py-8">
-        No hay artículos con este tag.
+        {MESSAGES.emptyTag}
       </div>
     )}
 
     <!-- Back link -->
     <div class="mt-12 pt-6 border-t border-[var(--border)]">
-      <a href="/blog" class="text-[var(--text-secondary)] hover:text-[var(--accent-orange)] text-sm transition-colors">
-        ← volver a posts
+      <a href={ROUTES.posts} class="text-[var(--text-secondary)] hover:text-[var(--accent-orange)] text-sm transition-colors">
+        ← {NAV_LABELS.backToPosts}
       </a>
     </div>
 

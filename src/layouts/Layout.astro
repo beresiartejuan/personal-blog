@@ -1,48 +1,49 @@
 ---
 import './../styles/global.css';
+import { SITE, SOCIAL, ROUTES, NAV_LABELS, TERMINAL_PROMPTS, ASSETS, EXTERNAL, getPageTitle } from '../config';
 
 interface Props {
   title?: string;
   description?: string;
 }
 
-const { title, description = "Blog técnico sobre desarrollo web y experiencias personales" } = Astro.props;
-const pageTitle = title ? `${title} | ~/blog` : "~/blog";
+const { title, description = SITE.defaultDescription } = Astro.props;
+const pageTitle = getPageTitle(title);
 const currentYear = new Date().getFullYear();
 ---
 
 <!DOCTYPE html>
-<html lang="es">
+<html lang={SITE.lang}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href={ASSETS.faviconSvg} />
+    <link rel="icon" type="image/x-icon" href={ASSETS.faviconIco} />
     <title>{pageTitle}</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href={EXTERNAL.googleFontsPreconnect}>
+    <link rel="preconnect" href={EXTERNAL.googleFontsGStatic} crossorigin>
+    <link href={EXTERNAL.googleFontsStylesheet} rel="stylesheet">
   </head>
   <body class="min-h-screen flex flex-col">
     <header class="border-b border-[var(--border)] bg-[var(--bg-secondary)]">
       <div class="max-w-3xl mx-auto px-4 sm:px-6">
         <div class="flex items-center justify-between h-14">
           <!-- Prompt -->
-          <a href="/" class="header-prompt cursor-blink hover:text-[var(--text-primary)] transition-colors">
-            ~/blog
+          <a href={ROUTES.home} class="header-prompt cursor-blink hover:text-[var(--text-primary)] transition-colors">
+            {TERMINAL_PROMPTS.home.replace(' $', '')}
           </a>
 
           <!-- Navigation -->
           <nav class="flex items-center gap-6 text-sm">
-            <a href="/blog" class="text-[var(--text-secondary)] hover:text-[var(--accent-orange)] transition-colors">
-              posts
+            <a href={ROUTES.posts} class="text-[var(--text-secondary)] hover:text-[var(--accent-orange)] transition-colors">
+              {NAV_LABELS.posts}
             </a>
-            <a href="/buscar" class="text-[var(--text-secondary)] hover:text-[var(--accent-orange)] transition-colors">
-              buscar
+            <a href={ROUTES.search} class="text-[var(--text-secondary)] hover:text-[var(--accent-orange)] transition-colors">
+              {NAV_LABELS.search}
             </a>
-            <a href="/sobre-mi" class="text-[var(--text-secondary)] hover:text-[var(--accent-orange)] transition-colors">
-              sobre-mi
+            <a href={ROUTES.about} class="text-[var(--text-secondary)] hover:text-[var(--accent-orange)] transition-colors">
+              {NAV_LABELS.about}
             </a>
           </nav>
         </div>
@@ -57,10 +58,10 @@ const currentYear = new Date().getFullYear();
       <div class="max-w-3xl mx-auto px-4 sm:px-6 flex items-center justify-between">
         <span>© {currentYear}</span>
         <div class="flex items-center gap-4">
-          <a href="https://github.com/beresiarte" target="_blank" rel="noopener noreferrer">
+          <a href={SOCIAL.github} target="_blank" rel="noopener noreferrer">
             github
           </a>
-          <a href="https://linkedin.com/in/beresiarte" target="_blank" rel="noopener noreferrer">
+          <a href={SOCIAL.linkedin} target="_blank" rel="noopener noreferrer">
             linkedin
           </a>
         </div>

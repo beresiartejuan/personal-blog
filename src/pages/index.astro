@@ -1,31 +1,21 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
+import { TERMINAL_PROMPTS, CONTENT, MESSAGES, ROUTES, formatDateISO, getReadingTime } from '../config';
 
 // Obtener posts
 const allPosts = await getCollection('blog');
 const posts = allPosts
   .filter(post => !post.data.draft)
   .sort((a, b) => new Date(b.data.pubDatetime).getTime() - new Date(a.data.pubDatetime).getTime());
-
-// Función para formatear fecha YYYY-MM-DD
-function formatDate(date: Date): string {
-  return date.toISOString().split('T')[0];
-}
-
-// Calcular tiempo de lectura aproximado (200 palabras/minuto)
-function getReadingTime(body: string): number {
-  const words = body.split(/\s+/).length;
-  return Math.ceil(words / 200);
-}
 ---
 
-<Layout description="Blog técnico sobre desarrollo web, JavaScript y experiencias de aprendizaje">
+<Layout>
   <div class="max-w-3xl mx-auto px-4 sm:px-6 py-12">
     
     <!-- Prompt del header -->
     <div class="mb-12 text-[var(--text-dim)] text-sm">
-      ~/blog $
+      {TERMINAL_PROMPTS.home}
     </div>
 
     <!-- Lista de posts tipo terminal -->
@@ -34,11 +24,11 @@ function getReadingTime(body: string): number {
         const readingTime = getReadingTime(post.body || '');
         return (
           <article class="row-terminal-vertical group">
-            <a href={`/blog/${post.id}`} class="block py-5">
+            <a href={`${ROUTES.posts}/${post.id}`} class="block py-5">
               <!-- Fila 1: Fecha y tiempo de lectura -->
               <div class="flex items-center gap-3 mb-2">
                 <span class="post-meta">
-                  {formatDate(post.data.pubDatetime)}
+                  {formatDateISO(post.data.pubDatetime)}
                 </span>
                 <span class="text-[var(--text-dim)]">·</span>
                 <span class="post-meta">
@@ -54,7 +44,7 @@ function getReadingTime(body: string): number {
               <!-- Fila 3: Tags -->
               {(post.data.tags || []).length > 0 && (
                 <div class="flex flex-wrap gap-2">
-                  {post.data.tags.slice(0, 4).map(tag => (
+                  {post.data.tags.slice(0, CONTENT.maxTagsInCard).map(tag => (
                     <span class="tag">{tag}</span>
                   ))}
                 </div>
@@ -68,14 +58,14 @@ function getReadingTime(body: string): number {
     <!-- Empty state -->
     {posts.length === 0 && (
       <div class="text-[var(--text-dim)] text-sm py-8">
-        No hay posts publicados todavía.
+        {MESSAGES.emptyPosts}
       </div>
     )}
 
     <!-- CTA estilo comando y contador de posts -->
     {posts.length > 0 && (
       <div class="mt-8 pt-6 border-t border-[var(--border)] flex items-center justify-between">
-        <a href="/blog" class="group flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--accent-orange)] transition-colors">
+        <a href={ROUTES.posts} class="group flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--accent-orange)] transition-colors">
           <span class="text-[var(--text-dim)]">$</span>
           <span class="text-base">ver-todos --posts</span>
           <span class="text-xl group-hover:translate-x-1 transition-transform">→</span>

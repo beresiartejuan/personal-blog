@@ -1,19 +1,19 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
+import { SITE, SOCIAL, TERMINAL_PROMPTS, NAV_LABELS, ASSETS, ANIMATION } from '../config';
 
 const posts = await getCollection('blog');
 const publishedPosts = posts.filter(post => !post.data.draft);
 const totalPosts = publishedPosts.length;
-const uniqueTags = [...new Set(posts.flatMap(post => post.data.tags || []))];
 ---
 
-<Layout title="sobre-mi" description="Juan Beresiarte - Desarrollador web y creador de contenido">
+<Layout title="sobre-mi" description={`${SITE.author} - Desarrollador web y creador de contenido`}>
   <div class="max-w-3xl mx-auto px-4 sm:px-6 py-12">
     
     <!-- Prompt del header -->
     <div class="mb-8 text-[var(--text-dim)] text-sm">
-      ~/blog/sobre-mi $
+      {TERMINAL_PROMPTS.about}
     </div>
 
     <!-- Información básica con foto -->
@@ -26,8 +26,8 @@ const uniqueTags = [...new Set(posts.flatMap(post => post.data.tags || []))];
             class="w-44 h-44 sm:w-52 sm:h-52 rounded-lg overflow-hidden border border-[var(--border)] bg-[var(--bg-secondary)] cursor-pointer transition-transform duration-150 ease-out hover:scale-[1.02] active:scale-95 select-none"
           >
             <img 
-              src="/profile_photo.jpeg" 
-              alt="Juan Beresiarte"
+              src={ASSETS.profilePhotos[0]} 
+              alt={SITE.author}
               class="w-full h-full object-cover pointer-events-none"
             />
           </div>
@@ -36,7 +36,7 @@ const uniqueTags = [...new Set(posts.flatMap(post => post.data.tags || []))];
         <!-- Info -->
         <div class="flex-1">
           <h1 class="text-2xl font-bold text-[var(--text-primary)] mb-2">
-            Juan Beresiarte
+            {SITE.author}
           </h1>
           
           <p class="text-[var(--text-secondary)] leading-relaxed mb-4">
@@ -45,13 +45,13 @@ const uniqueTags = [...new Set(posts.flatMap(post => post.data.tags || []))];
 
           <!-- Links -->
           <div class="flex flex-wrap gap-4 text-sm">
-            <a href="https://github.com/beresiarte" target="_blank" rel="noopener noreferrer">
+            <a href={SOCIAL.github} target="_blank" rel="noopener noreferrer">
               github
             </a>
-            <a href="https://linkedin.com/in/beresiarte" target="_blank" rel="noopener noreferrer">
+            <a href={SOCIAL.linkedin} target="_blank" rel="noopener noreferrer">
               linkedin
             </a>
-            <a href="https://instagram.com/beresiarte" target="_blank" rel="noopener noreferrer">
+            <a href={SOCIAL.instagram} target="_blank" rel="noopener noreferrer">
               instagram
             </a>
           </div>
@@ -66,12 +66,7 @@ const uniqueTags = [...new Set(posts.flatMap(post => post.data.tags || []))];
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
         <div class="border border-[var(--border)] rounded px-4 py-3">
           <div class="text-[var(--accent-orange)] font-semibold">{totalPosts}</div>
-          <div class="text-[var(--text-dim)]">posts</div>
-        </div>
-        
-        <div class="border border-[var(--border)] rounded px-4 py-3">
-          <div class="text-[var(--accent-blue)] font-semibold">{uniqueTags.length}</div>
-          <div class="text-[var(--text-dim)]">tags</div>
+          <div class="text-[var(--text-dim)]">{NAV_LABELS.posts}</div>
         </div>
         
         <div class="border border-[var(--border)] rounded px-4 py-3">
@@ -79,10 +74,6 @@ const uniqueTags = [...new Set(posts.flatMap(post => post.data.tags || []))];
           <div class="text-[var(--text-dim)]">idioma</div>
         </div>
         
-        <div class="border border-[var(--border)] rounded px-4 py-3">
-          <div class="text-[var(--text-primary)] font-semibold">∞</div>
-          <div class="text-[var(--text-dim)]">aprendiendo</div>
-        </div>
       </div>
     </section>
 
@@ -122,16 +113,25 @@ const uniqueTags = [...new Set(posts.flatMap(post => post.data.tags || []))];
 
   </div>
 
-  <script>
+  <script define:vars={{ profilePhotos: ASSETS.profilePhotos, animationDuration: ANIMATION.pressDuration }}>
     const photo = document.getElementById('profile-photo');
+    const img = photo?.querySelector('img');
+    
+    let currentPhotoIndex = 0;
     
     photo?.addEventListener('click', () => {
       // Animación de "press" al hacer click
       photo.style.transform = 'scale(0.92)';
       
+      // Rotar al siguiente foto en el array
+      if (img) {
+        currentPhotoIndex = (currentPhotoIndex + 1) % profilePhotos.length;
+        img.src = profilePhotos[currentPhotoIndex];
+      }
+      
       setTimeout(() => {
         photo.style.transform = '';
-      }, 150);
+      }, animationDuration);
     });
   </script>
 </Layout>
