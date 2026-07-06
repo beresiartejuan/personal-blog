@@ -1,0 +1,285 @@
+---
+import { actions } from "astro:actions";
+import { formatDistanceToNow } from "date-fns";
+import { es } from "date-fns/locale";
+
+interface Props {
+  postSlug: string;
+}
+
+const { postSlug } = Astro.props;
+
+// Obtener comentarios del servidor
+const { data } = await actions.getComments({ postSlug });
+const comments = data?.comments || [];
+---
+
+<div class="comments-section">
+  <h3 class="comments-title">
+    {comments.length === 0 
+      ? "No hay comentarios aún" 
+      : `${comments.length} ${comments.length === 1 ? 'comentario' : 'comentarios'}`
+    }
+  </h3>
+
+  <div id="comments-container" class="comments-container" data-post-slug={postSlug}>
+    {comments.length === 0 ? (
+      <div class="no-comments">
+        <p>Sé el primero en comentar 📝</p>
+      </div>
+    ) : (
+      comments.map((comment) => (
+        <article class="comment-item" data-anonymous-id={comment.anonymousId}>
+          <div class="comment-avatar">
+            <img 
+              src={`https://api.dicebear.com/10.x/lorelei-neutral/svg?seed=${encodeURIComponent(comment.anonymousId)}`}
+              alt="Avatar anónimo"
+              loading="lazy"
+            />
+          </div>
+          <div class="comment-content">
+            <header class="comment-header">
+              <span class="comment-author">
+                {comment.authorName || "Anónimo"}
+              </span>
+              <span class="comment-date" title={new Date(comment.createdAt).toLocaleString("es-ES")}>
+                {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: es })}
+              </span>
+              {comment.isFlagged && (
+                <span class="flag-badge" title="Contenido censurado por lenguaje inapropiado">
+                  ⚠️ Censurado
+                </span>
+              )}
+            </header>
+            <p class="comment-text">{comment.content}</p>
+            <span class="current-user-badge" style="display: none;">Tú</span>
+          </div>
+        </article>
+      ))
+    )}
+  </div>
+</div>
+
+<style>
+  .comments-section {
+    margin-top: 2rem;
+  }
+
+  .comments-title {
+    color: #e4e4e7;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #2a2a2f;
+  }
+
+  .comments-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .no-comments {
+    text-align: center;
+    padding: 2rem;
+    color: #71717a;
+    font-style: italic;
+    background: #1a1a1f;
+    border-radius: 8px;
+    border: 1px dashed #3a3a3f;
+  }
+
+  .comment-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: #1a1a1f;
+    border: 1px solid #2a2a2f;
+    border-radius: 8px;
+    transition: border-color 0.2s ease;
+  }
+
+  .comment-item:hover {
+    border-color: #3a3a3f;
+  }
+
+  .comment-item.current-user {
+    border-color: #4a9eff;
+    background: linear-gradient(135deg, #1a1a1f 0%, #1e2a3a 100%);
+  }
+
+  .comment-avatar {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #2a2a2f;
+    border: 2px solid #3a3a3f;
+  }
+
+  .comment-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .comment-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .comment-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .comment-author {
+    color: #ff6b35;
+    font-weight: 600;
+    font-size: 0.9375rem;
+  }
+
+  .comment-date {
+    color: #71717a;
+    font-size: 0.8125rem;
+  }
+
+  .flag-badge {
+    font-size: 0.75rem;
+    padding: 0.125rem 0.5rem;
+    background: rgba(245, 158, 11, 0.2);
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    color: #f59e0b;
+    border-radius: 4px;
+  }
+
+  .comment-text {
+    color: #d4d4d8;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    margin: 0;
+    word-wrap: break-word;
+  }
+
+  .current-user-badge {
+    display: inline-block;
+    font-size: 0.6875rem;
+    padding: 0.125rem 0.375rem;
+    background: #4a9eff;
+    color: #0a0a0f;
+    border-radius: 4px;
+    font-weight: 600;
+    margin-top: 0.5rem;
+  }
+
+  @media (max-width: 640px) {
+    .comment-item {
+      padding: 1rem;
+      gap: 0.75rem;
+    }
+
+    .comment-avatar {
+      width: 40px;
+      height: 40px;
+    }
+
+    .comment-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.25rem;
+    }
+  }
+</style>
+
+<script>
+  import { getAnonymousId } from "@/lib/visitor";
+  import { actions } from "astro:actions";
+
+  const container = document.getElementById("comments-container");
+  const currentAnonymousId = getAnonymousId();
+
+  // Marcar comentarios del usuario actual
+  function markCurrentUserComments() {
+    const comments = container?.querySelectorAll(".comment-item");
+    comments?.forEach((comment) => {
+      const commentId = comment.getAttribute("data-anonymous-id");
+      if (commentId === currentAnonymousId) {
+        comment.classList.add("current-user");
+        const badge = comment.querySelector(".current-user-badge") as HTMLElement | null;
+        if (badge) {
+          badge.style.display = "inline-block";
+        }
+      }
+    });
+  }
+
+  // Recargar comentarios
+  async function reloadComments() {
+    const postSlug = container?.getAttribute("data-post-slug");
+    if (!postSlug || !container) return;
+
+    try {
+      const { data } = await actions.getComments({ postSlug });
+      const comments = data?.comments || [];
+
+      if (comments.length === 0) {
+        container.innerHTML = `
+          <div class="no-comments">
+            <p>Sé el primero en comentar 📝</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = comments.map((comment) => `
+        <article class="comment-item" data-anonymous-id="${comment.anonymousId}">
+          <div class="comment-avatar">
+            <img 
+              src="https://api.dicebear.com/10.x/lorelei-neutral/svg?seed=${encodeURIComponent(comment.anonymousId)}"
+              alt="Avatar anónimo"
+              loading="lazy"
+            />
+          </div>
+          <div class="comment-content">
+            <header class="comment-header">
+              <span class="comment-author">
+                ${comment.authorName || "Anónimo"}
+              </span>
+              <span class="comment-date" title="${new Date(comment.createdAt).toLocaleString("es-ES")}">
+                ${new Date(comment.createdAt).toLocaleDateString("es-ES", { 
+                  day: "numeric", 
+                  month: "short", 
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit"
+                })}
+              </span>
+              ${comment.isFlagged ? `
+                <span class="flag-badge" title="Contenido censurado por lenguaje inapropiado">
+                  ⚠️ Censurado
+                </span>
+              ` : ""}
+            </header>
+            <p class="comment-text">${comment.content}</p>
+            <span class="current-user-badge" style="display: none;">Tú</span>
+          </div>
+        </article>
+      `).join("");
+
+      markCurrentUserComments();
+    } catch (error) {
+      console.error("Error reloading comments:", error);
+    }
+  }
+
+  // Marcar comentarios al cargar
+  markCurrentUserComments();
+
+  // Escuchar evento de nuevo comentario
+  window.addEventListener("comment-submitted", reloadComments);
+</script>

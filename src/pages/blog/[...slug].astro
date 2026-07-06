@@ -1,21 +1,27 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import { getCollection, render } from 'astro:content';
 import { SITE, ROUTES, NAV_LABELS } from '../../config';
-import { renderPost, getPrevNextPosts, calculateReadingTime } from '../../lib/posts';
+import { getPrevNextPosts, calculateReadingTime } from '../../lib/posts';
 import { formatDate } from '../../lib/utils';
+import CommentsSection from '../../components/comments/CommentsSection.astro';
 
-// Static paths
-export async function getStaticPaths() {
-  const { getCollection } = await import('astro:content');
-  const posts = await getCollection('blog');
-  return posts.map(post => ({
-    params: { slug: post.id },
-    props: { post },
-  }));
+// SSR mode - obtener el slug de los params
+const { slug } = Astro.params;
+
+if (!slug) {
+  return Astro.redirect('/404');
 }
 
-const { post } = Astro.props;
-const { Content } = await renderPost(post);
+// Buscar el post por slug
+const posts = await getCollection('blog');
+const post = posts.find(p => p.id === slug);
+
+if (!post || post.data.draft) {
+  return Astro.redirect('/404');
+}
+
+const { Content } = await render(post);
 
 // Get prev/next posts for navigation
 const { prevPost, nextPost } = await getPrevNextPosts(post.id);
@@ -92,6 +98,9 @@ const readingTime = calculateReadingTime(post.body || '');
         )}
       </div>
     </nav>
+
+    <!-- Sección de comentarios -->
+    <CommentsSection postSlug={post.id} />
 
   </article>
 </Layout>

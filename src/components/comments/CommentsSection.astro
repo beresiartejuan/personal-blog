@@ -1,0 +1,84 @@
+---
+import CommentForm from "./CommentForm.astro";
+import CommentList from "./CommentList.astro";
+import VisitCounter from "./VisitCounter.astro";
+
+interface Props {
+  postSlug: string;
+}
+
+const { postSlug } = Astro.props;
+---
+
+<section class="comments-wrapper" aria-label="Comentarios">
+  <div class="comments-header">
+    <h2 class="section-title">Comentarios</h2>
+    <VisitCounter postSlug={postSlug} />
+  </div>
+
+  <div class="comments-intro">
+    <p class="intro-text">
+      💬 Los comentarios son <strong>anónimos</strong>. No requieren registro ni email.
+      Cada navegador genera un identificador único para mostrar tu avatar.
+    </p>
+  </div>
+
+  <CommentForm postSlug={postSlug} />
+  
+  <CommentList postSlug={postSlug} />
+</section>
+
+<style>
+  .comments-wrapper {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 2px solid #2a2a2f;
+  }
+
+  .comments-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .section-title {
+    color: #e4e4e7;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .comments-intro {
+    background: linear-gradient(135deg, rgba(74, 158, 255, 0.1) 0%, rgba(255, 107, 53, 0.1) 100%);
+    border: 1px solid rgba(74, 158, 255, 0.2);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .intro-text {
+    color: #a1a1aa;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .intro-text strong {
+    color: #ff6b35;
+    font-weight: 600;
+  }
+
+  @media (max-width: 640px) {
+    .comments-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+    }
+  }
+</style>

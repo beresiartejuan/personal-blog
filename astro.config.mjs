@@ -14,7 +14,7 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
   },
-
   integrations: [mdx(), sitemap()],
   adapter: vercel(),
+  output: "server"
 });

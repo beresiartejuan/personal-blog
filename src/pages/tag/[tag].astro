@@ -4,16 +4,12 @@ import { SITE, ROUTES, NAV_LABELS, TERMINAL_PROMPTS, CONTENT, MESSAGES } from '.
 import { getAllTags, getPostsByTag, calculateReadingTime } from '../../lib/posts';
 import { formatDateISO } from '../../lib/utils';
 
-export async function getStaticPaths() {
-  const tags = await getAllTags();
-  
-  return tags.map(tag => ({
-    params: { tag },
-    props: { tag },
-  }));
-}
+// SSR mode - obtener el tag de los params
+const { tag } = Astro.params;
 
-const { tag } = Astro.props;
+if (!tag) {
+  return Astro.redirect('/404');
+}
 
 const posts = await getPostsByTag(tag);
 const allTags = await getAllTags();
