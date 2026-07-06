@@ -1,0 +1,389 @@
+/* ============================================
+   CommentList - Motion Design System
+   Premium personality with CSS animations
+   ============================================ */
+
+/* Palette - preserved from original */
+:root {
+  --comment-bg: #111114;
+  --comment-border: #1e1e24;
+  --comment-border-hover: #2d2d35;
+  --text-primary: #f0f0f5;
+  --text-secondary: #8b8b97;
+  --text-tertiary: #5a5a66;
+  --accent-orange: #ff6b35;
+  --accent-orange-soft: rgba(255, 107, 53, 0.08);
+  --avatar-bg: #25252c;
+}
+
+/* ============================================
+   Stage Container
+   ============================================ */
+.comments-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+/* ============================================
+   Loading State
+   ============================================ */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.comment-loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  color: var(--text-tertiary);
+  font-size: 0.875rem;
+  gap: 1rem;
+  animation: fade-in-up 0.4s ease-out cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.comment-spinner {
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--comment-border);
+  border-top-color: var(--accent-orange);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* ============================================
+   Empty State
+   ============================================ */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.comment-empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--text-tertiary);
+  animation: pop-in 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.comment-empty-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 1.5rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--comment-border) 0%, var(--comment-bg) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  opacity: 0.6;
+  animation: float 3s ease-in-out infinite;
+}
+
+.comment-empty-title {
+  font-size: 1rem;
+  margin: 0;
+  font-weight: 400;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.comment-empty-hint {
+  font-size: 0.8125rem;
+  margin: 0;
+  opacity: 0.7;
+}
+
+/* ============================================
+   Error State
+   ============================================ */
+@keyframes error-appear {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.comment-error-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: #ef4444;
+  animation: error-appear 0.3s ease-out forwards;
+}
+
+.comment-error-state p {
+  margin: 0;
+  font-size: 0.9375rem;
+  margin-bottom: 1rem;
+}
+
+.comment-retry-btn {
+  padding: 0.5rem 1rem;
+  background: var(--comment-border);
+  border: none;
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.comment-retry-btn:hover {
+  background: var(--comment-border-hover);
+}
+
+/* ============================================
+   Comment Scenes - Staggered Entrance
+   ============================================ */
+@keyframes comment-enter {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes subtle-hover {
+  from {
+    background: transparent;
+  }
+  to {
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.01) 50%, transparent 100%);
+  }
+}
+
+.comment-scene {
+  position: relative;
+  padding: 1.5rem 0;
+  border-bottom: 1px solid var(--comment-border);
+  opacity: 0;
+  animation: comment-enter 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.comment-scene:last-child {
+  border-bottom: none;
+}
+
+.comment-scene:hover {
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.01) 50%, transparent 100%);
+  transition: background 0.2s ease;
+}
+
+/* Layout horizontal: avatar | contenido */
+.comment-block {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+/* ============================================
+   Avatar System
+   ============================================ */
+@keyframes avatar-pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05) translateY(-2px); }
+  100% { transform: scale(1.05) translateY(-2px); }
+}
+
+@keyframes shadow-expand {
+  0% { box-shadow: 0 0 0 rgba(0, 0, 0, 0); }
+  100% { box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3); }
+}
+
+.comment-avatar-slot {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+}
+
+.comment-avatar-frame {
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--avatar-bg);
+  position: relative;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease;
+}
+
+.comment-scene:hover .comment-avatar-frame {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* Anillo para usuario actual */
+.comment-avatar-ring {
+  position: absolute;
+  inset: -3px;
+  border-radius: 16px;
+  border: 2px solid transparent;
+  pointer-events: none;
+  transition: border-color 0.2s ease;
+}
+
+.comment-avatar-ring-own {
+  border-color: var(--accent-orange);
+}
+
+/* Placeholder mientras carga */
+.comment-avatar-placeholder {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #2a2a32 0%, #1f1f25 100%);
+  z-index: 1;
+}
+
+.comment-avatar-img {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.comment-avatar-img.loaded {
+  opacity: 1;
+}
+
+/* ============================================
+   Content Area
+   ============================================ */
+.comment-content-area {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding-top: 0.25rem;
+}
+
+/* NIVEL 1: El comentario (más importante) */
+.comment-voice {
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  color: var(--text-primary);
+  margin: 0;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+/* NIVEL 2: Metadata (menos importante) */
+.comment-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.comment-author-mark {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+}
+
+.comment-own .comment-author-mark {
+  color: var(--accent-orange);
+}
+
+.comment-time-mark {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  font-weight: 400;
+}
+
+.comment-separator {
+  color: var(--text-tertiary);
+  font-size: 0.625rem;
+  opacity: 0.5;
+}
+
+/* ============================================
+   Badges
+   ============================================ */
+.comment-badge {
+  font-size: 0.6875rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.comment-badge-you {
+  background: var(--accent-orange-soft);
+  color: var(--accent-orange);
+  border: 1px solid rgba(255, 107, 53, 0.2);
+}
+
+.comment-badge-flagged {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+@media (max-width: 640px) {
+  .comment-block {
+    grid-template-columns: 44px 1fr;
+    gap: 1rem;
+  }
+
+  .comment-avatar-slot {
+    width: 44px;
+    height: 44px;
+  }
+
+  .comment-avatar-frame {
+    border-radius: 12px;
+  }
+
+  .comment-avatar-ring {
+    border-radius: 14px;
+  }
+
+  .comment-voice {
+    font-size: 1rem;
+  }
+
+  .comment-scene {
+    padding: 1.25rem 0;
+  }
+}

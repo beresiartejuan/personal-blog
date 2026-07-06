@@ -8,13 +8,15 @@ import vercel from "@astrojs/vercel";
 
 import sitemap from "@astrojs/sitemap";
 
+import preact from "@astrojs/preact";
+
 // https://astro.build/config
 export default defineConfig({
   site: "https://blog.beresiarte.xyz",
   vite: {
     plugins: [tailwindcss()],
   },
-  integrations: [mdx(), sitemap()],
+  integrations: [mdx(), sitemap(), preact()],
   adapter: vercel(),
   output: "server"
 });
