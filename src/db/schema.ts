@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, uniqueIndex, index } from "drizzle-orm/sqlite-core";
 
 // Tabla de vistas de posts - sistema de visitas únicas (1 por persona/post/día)
 export const postViewsTable = sqliteTable("post_views", {
@@ -10,8 +10,8 @@ export const postViewsTable = sqliteTable("post_views", {
 }, (table) => ([
   // Índice único para evitar múltiples visitas del mismo usuario al mismo post en el mismo día
   uniqueIndex("unique_post_view").on(table.postSlug, table.sessionId, table.viewDate),
-  // Índice para queries rápidas por post
-  uniqueIndex("post_views_slug_idx").on(table.postSlug),
+  // Índice para queries rápidas por post (NO único - permite múltiples registros)
+  index("post_views_slug_idx").on(table.postSlug),
 ]));
 
 // Tabla de comentarios anónimos
