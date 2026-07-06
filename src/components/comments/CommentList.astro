@@ -6,241 +6,285 @@ interface Props {
 const { postSlug } = Astro.props;
 ---
 
-<div class="comments-feed" data-post-slug={postSlug}>
-  <div class="loading-placeholder">
-    <div class="skeleton-avatar"></div>
-    <div class="skeleton-content">
-      <div class="skeleton-line name"></div>
-      <div class="skeleton-line"></div>
-      <div class="skeleton-line short"></div>
-    </div>
+<div class="comments-stage" data-post-slug={postSlug}>
+  <div class="stage-loading">
+    <div class="spinner"></div>
+    <span>Cargando conversación...</span>
   </div>
 </div>
 
 <style>
-  .comments-feed {
+  /* Paleta específica para comentarios */
+  :root {
+    --comment-bg: #111114;
+    --comment-border: #1e1e24;
+    --comment-border-hover: #2d2d35;
+    --text-primary: #f0f0f5;
+    --text-secondary: #8b8b97;
+    --text-tertiary: #5a5a66;
+    --accent-orange: #ff6b35;
+    --accent-orange-soft: rgba(255, 107, 53, 0.08);
+    --avatar-bg: #25252c;
+  }
+
+  .comments-stage {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 0;
+    max-width: 680px;
+    margin: 0 auto;
   }
 
   /* Loading state */
-  .loading-placeholder {
-    display: flex;
-    gap: 1rem;
-    padding: 1rem 0;
-    opacity: 0.5;
-    animation: pulse 2s ease-in-out infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 0.4; }
-    50% { opacity: 0.7; }
-  }
-
-  .skeleton-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: #2a2a2f;
-    flex-shrink: 0;
-  }
-
-  .skeleton-content {
-    flex: 1;
+  .stage-loading {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    padding-top: 0.25rem;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    color: var(--text-tertiary);
+    font-size: 0.875rem;
+    gap: 1rem;
   }
 
-  .skeleton-line {
-    height: 14px;
-    background: #2a2a2f;
-    border-radius: 3px;
-    width: 100%;
+  .spinner {
+    width: 32px;
+    height: 32px;
+    border: 2px solid var(--comment-border);
+    border-top-color: var(--accent-orange);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
   }
 
-  .skeleton-line.name {
-    width: 100px;
-    height: 12px;
-  }
-
-  .skeleton-line.short {
-    width: 60%;
+  @keyframes spin {
+    to { transform: rotate(360deg); }
   }
 
   /* Empty state */
-  .empty-feed {
+  .stage-empty {
     text-align: center;
-    padding: 3rem 2rem;
-    color: #52525b;
+    padding: 4rem 2rem;
+    color: var(--text-tertiary);
   }
 
-  .empty-icon {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
+  .empty-illustration {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 1.5rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--comment-border) 0%, var(--comment-bg) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
     opacity: 0.6;
   }
 
   .empty-text {
-    font-size: 0.9375rem;
+    font-size: 1rem;
     margin: 0;
+    font-weight: 400;
   }
 
-  /* Comment cards */
-  .comment-card {
-    display: flex;
-    gap: 0.875rem;
-    padding: 1.25rem;
-    background: #141418;
-    border: 1px solid #1f1f25;
-    border-radius: 12px;
+  .empty-hint {
+    font-size: 0.8125rem;
+    margin: 0.5rem 0 0;
+    opacity: 0.7;
+  }
+
+  /* Comment blocks - cada uno es una "escena" */
+  .comment-scene {
+    position: relative;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--comment-border);
     transition: all 0.2s ease;
   }
 
-  .comment-card:hover {
-    border-color: #2a2a35;
-    background: #1a1a1f;
+  .comment-scene:last-child {
+    border-bottom: none;
   }
 
-  .comment-card.own-comment {
-    background: linear-gradient(135deg, rgba(255, 107, 53, 0.05) 0%, #141418 100%);
-    border-color: rgba(255, 107, 53, 0.3);
-    box-shadow: 0 0 20px rgba(255, 107, 53, 0.05);
+  .comment-scene:hover {
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.01) 50%, transparent 100%);
   }
 
-  /* Avatar */
-  .comment-avatar {
-    flex-shrink: 0;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    overflow: hidden;
-    background: linear-gradient(135deg, #2a2a2f 0%, #1a1a1f 100%);
-    border: 2px solid #2a2a2f;
+  /* Layout horizontal: avatar | contenido */
+  .comment-block {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 1.25rem;
+    align-items: start;
+  }
+
+  /* AVATAR - con tamaño fijo y reservado */
+  .avatar-slot {
     position: relative;
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
   }
 
-  .comment-card.own-comment .comment-avatar {
-    border-color: #ff6b35;
+  .avatar-frame {
+    width: 100%;
+    height: 100%;
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--avatar-bg);
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
 
-  .comment-avatar img {
+  .comment-scene:hover .avatar-frame {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Placeholder mientras carga */
+  .avatar-frame::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #2a2a32 0%, #1f1f25 100%);
+    z-index: 1;
+  }
+
+  .avatar-frame img {
+    position: relative;
+    z-index: 2;
     width: 100%;
     height: 100%;
     object-fit: cover;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.4s ease;
   }
 
-  .comment-avatar img.loaded {
+  .avatar-frame img.loaded {
     opacity: 1;
   }
 
-  .comment-avatar::before {
-    content: '';
+  /* Anillo para usuario actual */
+  .avatar-ring {
     position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, #3a3a45 0%, #2a2a2f 100%);
-    z-index: 0;
+    inset: -3px;
+    border-radius: 16px;
+    border: 2px solid transparent;
+    pointer-events: none;
+    transition: border-color 0.2s ease;
   }
 
-  /* Content */
-  .comment-body {
-    flex: 1;
-    min-width: 0;
+  .comment-scene.own .avatar-ring {
+    border-color: var(--accent-orange);
+  }
+
+  /* CONTENIDO - jerarquía tipográfica clara */
+  .content-area {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.625rem;
+    padding-top: 0.25rem;
   }
 
-  /* The comment text - HERO */
-  .comment-text {
+  /* NIVEL 1: El comentario (más importante) */
+  .comment-voice {
     font-size: 1.0625rem;
     line-height: 1.55;
-    color: #e4e4e7;
+    color: var(--text-primary);
     margin: 0;
-    word-wrap: break-word;
     font-weight: 400;
     letter-spacing: -0.01em;
   }
 
-  /* Meta - SECONDARY */
-  .comment-meta {
+  /* NIVEL 2: Metadata (menos importante) */
+  .comment-identity {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    margin-top: 0.25rem;
+    flex-wrap: wrap;
   }
 
-  .author-name {
+  .author-mark {
     font-size: 0.8125rem;
     font-weight: 600;
-    color: #a1a1aa;
+    color: var(--text-secondary);
+    letter-spacing: 0.02em;
   }
 
-  .comment-card.own-comment .author-name {
-    color: #ff8555;
+  .comment-scene.own .author-mark {
+    color: var(--accent-orange);
   }
 
-  .meta-separator {
-    color: #3a3a45;
+  .time-mark {
     font-size: 0.75rem;
-  }
-
-  .timestamp {
-    font-size: 0.75rem;
-    color: #52525b;
+    color: var(--text-tertiary);
     font-weight: 400;
   }
 
-  .you-badge {
+  .separator {
+    color: var(--text-tertiary);
+    font-size: 0.625rem;
+    opacity: 0.5;
+  }
+
+  /* Badges */
+  .badge {
     font-size: 0.6875rem;
     padding: 0.125rem 0.5rem;
-    background: rgba(255, 107, 53, 0.15);
-    color: #ff6b35;
     border-radius: 4px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.03em;
   }
 
-  .flag-badge {
-    font-size: 0.6875rem;
-    padding: 0.125rem 0.5rem;
+  .badge-you {
+    background: var(--accent-orange-soft);
+    color: var(--accent-orange);
+    border: 1px solid rgba(255, 107, 53, 0.2);
+  }
+
+  .badge-flagged {
     background: rgba(245, 158, 11, 0.1);
     color: #f59e0b;
-    border-radius: 4px;
-    font-weight: 500;
+    border: 1px solid rgba(245, 158, 11, 0.2);
   }
 
   /* Error state */
-  .error-feed {
+  .stage-error {
     text-align: center;
-    padding: 2rem;
+    padding: 3rem 2rem;
     color: #ef4444;
-    background: rgba(239, 68, 68, 0.05);
-    border-radius: 8px;
   }
 
+  .stage-error p {
+    margin: 0;
+    font-size: 0.9375rem;
+  }
+
+  /* Responsive */
   @media (max-width: 640px) {
-    .comment-card {
-      padding: 1rem;
-      gap: 0.75rem;
+    .comment-block {
+      grid-template-columns: 44px 1fr;
+      gap: 1rem;
     }
 
-    .comment-avatar {
-      width: 36px;
-      height: 36px;
+    .avatar-slot {
+      width: 44px;
+      height: 44px;
     }
 
-    .comment-text {
+    .avatar-frame {
+      border-radius: 12px;
+    }
+
+    .avatar-ring {
+      border-radius: 14px;
+    }
+
+    .comment-voice {
       font-size: 1rem;
     }
 
-    .author-name {
-      font-size: 0.75rem;
+    .comment-scene {
+      padding: 1.25rem 0;
     }
   }
 </style>
@@ -251,8 +295,8 @@ const { postSlug } = Astro.props;
   import { formatDistanceToNow } from "date-fns";
   import { es } from "date-fns/locale";
 
-  const container = document.querySelector(".comments-feed");
-  const currentAnonymousId = getAnonymousId();
+  const stage = document.querySelector(".comments-stage");
+  const currentId = getAnonymousId();
 
   function escapeHtml(text: string): string {
     const div = document.createElement('div');
@@ -260,60 +304,68 @@ const { postSlug } = Astro.props;
     return div.innerHTML;
   }
 
-  function renderComment(comment: any): string {
+  function renderScene(comment: any): string {
     const date = new Date(comment.createdAt);
     const timeAgo = formatDistanceToNow(date, { addSuffix: false, locale: es });
-    const isOwn = comment.anonymousId === currentAnonymousId;
+    const isOwn = comment.anonymousId === currentId;
     
     return `
-      <article class="comment-card ${isOwn ? 'own-comment' : ''}" data-anonymous-id="${comment.anonymousId}">
-        <div class="comment-avatar">
-          <img 
-            src="https://api.dicebear.com/10.x/lorelei-neutral/svg?seed=${encodeURIComponent(comment.anonymousId)}"
-            alt=""
-            loading="lazy"
-            onload="this.classList.add('loaded')"
-          />
-        </div>
-        <div class="comment-body">
-          <p class="comment-text">${escapeHtml(comment.content)}</p>
-          <div class="comment-meta">
-            ${isOwn 
-              ? '<span class="you-badge">Tú</span>' 
-              : `<span class="author-name">${escapeHtml(comment.authorName || "Anónimo")}</span>`
-            }
-            <span class="meta-separator">·</span>
-            <time class="timestamp" title="${date.toLocaleString("es-ES")}">${timeAgo}</time>
-            ${comment.isFlagged ? '<span class="flag-badge">⚠️ Censurado</span>' : ""}
+      <div class="comment-scene ${isOwn ? 'own' : ''}" data-id="${comment.anonymousId}">
+        <div class="comment-block">
+          <div class="avatar-slot">
+            <div class="avatar-ring"></div>
+            <div class="avatar-frame">
+              <img 
+                src="https://api.dicebear.com/10.x/lorelei-neutral/svg?seed=${encodeURIComponent(comment.anonymousId)}"
+                alt=""
+                loading="lazy"
+                onload="this.classList.add('loaded')"
+              />
+            </div>
+          </div>
+          
+          <div class="content-area">
+            <p class="comment-voice">${escapeHtml(comment.content)}</p>
+            
+            <div class="comment-identity">
+              ${isOwn 
+                ? '<span class="badge badge-you">Tú</span>'
+                : `<span class="author-mark">${escapeHtml(comment.authorName || "Anónimo")}</span>`
+              }
+              <span class="separator">·</span>
+              <time class="time-mark" title="${date.toLocaleString('es-ES')}">${timeAgo}</time>
+              ${comment.isFlagged ? '<span class="badge badge-flagged">Censurado</span>' : ''}
+            </div>
           </div>
         </div>
-      </article>
+      </div>
     `;
   }
 
   async function loadComments() {
-    const postSlug = container?.getAttribute("data-post-slug");
-    if (!postSlug || !container) return;
+    const postSlug = stage?.getAttribute("data-post-slug");
+    if (!postSlug || !stage) return;
 
     try {
       const { data } = await actions.getComments({ postSlug });
       const comments = data?.comments || [];
 
       if (comments.length === 0) {
-        container.innerHTML = `
-          <div class="empty-feed">
-            <div class="empty-icon">💭</div>
-            <p class="empty-text">Aún no hay comentarios. Sé el primero.</p>
+        stage.innerHTML = `
+          <div class="stage-empty">
+            <div class="empty-illustration">💭</div>
+            <p class="empty-text">Silencio por ahora</p>
+            <p class="empty-hint">Sé el primero en romperlo</p>
           </div>
         `;
         return;
       }
 
-      container.innerHTML = comments.map(renderComment).join("");
+      stage.innerHTML = comments.map(renderScene).join("");
     } catch (error) {
       console.error("Error loading comments:", error);
-      container.innerHTML = `
-        <div class="error-feed">
+      stage.innerHTML = `
+        <div class="stage-error">
           <p>No se pudieron cargar los comentarios</p>
         </div>
       `;
