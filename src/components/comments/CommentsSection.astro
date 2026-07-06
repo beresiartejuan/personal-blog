@@ -16,13 +16,6 @@ const { postSlug } = Astro.props;
     <VisitCounter postSlug={postSlug} />
   </div>
 
-  <div class="comments-intro">
-    <p class="intro-text">
-      💬 Los comentarios son <strong>anónimos</strong>. No requieren registro ni email.
-      Cada navegador genera un identificador único para mostrar tu avatar.
-    </p>
-  </div>
-
   <CommentForm postSlug={postSlug} />
   
   <CommentList postSlug={postSlug} />
@@ -49,26 +42,6 @@ const { postSlug } = Astro.props;
     font-size: 1.5rem;
     font-weight: 700;
     margin: 0;
-  }
-
-  .comments-intro {
-    background: linear-gradient(135deg, rgba(74, 158, 255, 0.1) 0%, rgba(255, 107, 53, 0.1) 100%);
-    border: 1px solid rgba(74, 158, 255, 0.2);
-    border-radius: 8px;
-    padding: 1rem 1.25rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .intro-text {
-    color: #a1a1aa;
-    font-size: 0.875rem;
-    line-height: 1.5;
-    margin: 0;
-  }
-
-  .intro-text strong {
-    color: #ff6b35;
-    font-weight: 600;
   }
 
   @media (max-width: 640px) {
