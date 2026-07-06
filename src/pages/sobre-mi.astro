@@ -1,11 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { getCollection } from 'astro:content';
 import { SITE, SOCIAL, TERMINAL_PROMPTS, NAV_LABELS, ASSETS, ANIMATION } from '../config';
+import { getTotalPostsCount } from '../lib/posts';
 
-const posts = await getCollection('blog');
-const publishedPosts = posts.filter(post => !post.data.draft);
-const totalPosts = publishedPosts.length;
+const totalPosts = await getTotalPostsCount();
 ---
 
 <Layout title="sobre-mi" description={`${SITE.author} - Desarrollador web y creador de contenido`}>

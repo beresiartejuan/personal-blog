@@ -1,12 +1,12 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { getCollection, render } from 'astro:content';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
-import { SITE, ROUTES, NAV_LABELS, CONTENT, formatDateISO, getReadingTime } from '../../config';
+import { SITE, ROUTES, NAV_LABELS } from '../../config';
+import { renderPost, getPrevNextPosts, calculateReadingTime } from '../../lib/posts';
+import { formatDate } from '../../lib/utils';
 
 // Static paths
 export async function getStaticPaths() {
+  const { getCollection } = await import('astro:content');
   const posts = await getCollection('blog');
   return posts.map(post => ({
     params: { slug: post.id },
@@ -15,19 +15,12 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props;
-const { Content } = await render(post);
+const { Content } = await renderPost(post);
 
 // Get prev/next posts for navigation
-const allPosts = await getCollection('blog');
-const sortedPosts = allPosts
-  .filter(p => !p.data.draft)
-  .sort((a, b) => new Date(b.data.pubDatetime).getTime() - new Date(a.data.pubDatetime).getTime());
+const { prevPost, nextPost } = await getPrevNextPosts(post.id);
 
-const currentIndex = sortedPosts.findIndex(p => p.id === post.id);
-const prevPost = currentIndex < sortedPosts.length - 1 ? sortedPosts[currentIndex + 1] : null;
-const nextPost = currentIndex > 0 ? sortedPosts[currentIndex - 1] : null;
-
-const readingTime = getReadingTime(post.body || '');
+const readingTime = calculateReadingTime(post.body || '');
 ---
 
 <Layout title={post.data.title} description={post.data.description}>
@@ -37,7 +30,7 @@ const readingTime = getReadingTime(post.body || '');
     <header class="mb-8">
       <!-- Fecha, tags y tiempo de lectura -->
       <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mb-6 text-sm text-[var(--text-secondary)]">
-        <span>{format(new Date(post.data.pubDatetime), CONTENT.dateFormat)}</span>
+        <span>{formatDate(post.data.pubDatetime)}</span>
         <span class="text-[var(--text-dim)]">·</span>
         
         <span>{readingTime} min lectura</span>
@@ -45,7 +38,7 @@ const readingTime = getReadingTime(post.body || '');
         {post.data.modDatetime && (
           <>
             <span class="text-[var(--text-dim)]">·</span>
-            <span>actualizado {format(new Date(post.data.modDatetime), CONTENT.dateFormat)}</span>
+            <span>actualizado {formatDate(post.data.modDatetime)}</span>
           </>
         )}
       </div>

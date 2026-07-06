@@ -1,19 +1,10 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { getCollection } from 'astro:content';
-import { SITE, ROUTES, TERMINAL_PROMPTS, CONTENT, MESSAGES, NAV_LABELS, formatDateISO, getReadingTime } from '../config';
+import { SITE, ROUTES, TERMINAL_PROMPTS, MESSAGES, NAV_LABELS } from '../config';
+import { getPostsForSearch } from '../lib/posts';
+import { formatDateISO } from '../lib/utils';
 
-const posts = await getCollection('blog');
-const postsData = posts
-  .filter(post => !post.data.draft)
-  .map(post => ({
-    slug: post.id,
-    title: post.data.title,
-    description: post.data.description,
-    tags: post.data.tags || [],
-    pubDatetime: post.data.pubDatetime,
-    body: post.body || '',
-  }));
+const postsData = await getPostsForSearch();
 ---
 
 <Layout title="buscar" description={`Buscar artículos en el blog | ${SITE.title}`}>
@@ -61,6 +52,9 @@ const postsData = posts
   const searchResults = document.getElementById('search-results');
   const noResults = document.getElementById('no-results');
   
+  // Utilidades inline para el cliente
+  const WORDS_PER_MINUTE = 200;
+  
   function formatDate(dateString) {
     const date = new Date(dateString);
     return date.toISOString().split('T')[0];
@@ -68,7 +62,7 @@ const postsData = posts
   
   function getReadingTime(body) {
     const words = body.split(/\s+/).length;
-    return Math.ceil(words / 200);
+    return Math.ceil(words / WORDS_PER_MINUTE);
   }
   
   function highlightMatch(text, query) {

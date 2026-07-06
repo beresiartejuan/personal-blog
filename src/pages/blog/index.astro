@@ -1,15 +1,11 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { getCollection } from 'astro:content';
-import { SITE, ROUTES, NAV_LABELS, TERMINAL_PROMPTS, CONTENT, MESSAGES, formatDateISO, getReadingTime } from '../../config';
+import { SITE, ROUTES, NAV_LABELS, TERMINAL_PROMPTS, CONTENT, MESSAGES } from '../../config';
+import { getSortedPosts, getAllTags, calculateReadingTime } from '../../lib/posts';
+import { formatDateISO } from '../../lib/utils';
 
-const allPosts = await getCollection('blog');
-const posts = allPosts
-  .filter(post => !post.data.draft)
-  .sort((a, b) => new Date(b.data.pubDatetime).getTime() - new Date(a.data.pubDatetime).getTime());
-
-// Obtener todos los tags únicos
-const allTags = [...new Set(allPosts.flatMap(post => post.data.tags || []))].sort();
+const posts = await getSortedPosts();
+const allTags = await getAllTags();
 ---
 
 <Layout title="posts" description={`Todos los artículos sobre desarrollo web, JavaScript y más | ${SITE.title}`}>
@@ -43,7 +39,7 @@ const allTags = [...new Set(allPosts.flatMap(post => post.data.tags || []))].sor
     <!-- Lista de posts tipo terminal -->
     <div class="space-y-0">
       {posts.map((post) => {
-        const readingTime = getReadingTime(post.body || '');
+        const readingTime = calculateReadingTime(post.body || '');
         return (
           <article class="row-terminal group">
             <a href={`${ROUTES.posts}/${post.id}`} class="contents">

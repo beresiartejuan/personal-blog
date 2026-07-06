@@ -1,11 +1,11 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { getCollection } from 'astro:content';
-import { SITE, ROUTES, NAV_LABELS, TERMINAL_PROMPTS, CONTENT, MESSAGES, formatDateISO, getReadingTime } from '../../config';
+import { SITE, ROUTES, NAV_LABELS, TERMINAL_PROMPTS, CONTENT, MESSAGES } from '../../config';
+import { getAllTags, getPostsByTag, calculateReadingTime } from '../../lib/posts';
+import { formatDateISO } from '../../lib/utils';
 
 export async function getStaticPaths() {
-  const posts = await getCollection('blog');
-  const tags = [...new Set(posts.flatMap(post => post.data.tags || []))];
+  const tags = await getAllTags();
   
   return tags.map(tag => ({
     params: { tag },
@@ -15,16 +15,8 @@ export async function getStaticPaths() {
 
 const { tag } = Astro.props;
 
-const allPosts = await getCollection('blog');
-const posts = allPosts
-  .filter(post => 
-    !post.data.draft && 
-    post.data.tags?.includes(tag)
-  )
-  .sort((a, b) => new Date(b.data.pubDatetime).getTime() - new Date(a.data.pubDatetime).getTime());
-
-// Get all tags for filter
-const allTags = [...new Set(allPosts.flatMap(post => post.data.tags || []))].sort();
+const posts = await getPostsByTag(tag);
+const allTags = await getAllTags();
 ---
 
 <Layout title={`tag/${tag}`} description={`Artículos etiquetados con #${tag} | ${SITE.title}`}>
@@ -69,7 +61,7 @@ const allTags = [...new Set(allPosts.flatMap(post => post.data.tags || []))].sor
     <!-- Lista de posts tipo terminal -->
     <div class="space-y-0">
       {posts.map((post) => {
-        const readingTime = getReadingTime(post.body || '');
+        const readingTime = calculateReadingTime(post.body || '');
         return (
           <article class="row-terminal group">
             <a href={`${ROUTES.posts}/${post.id}`} class="contents">

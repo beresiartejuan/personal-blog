@@ -1,14 +1,11 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { getCollection } from 'astro:content';
-import { SITE, SOCIAL, TERMINAL_PROMPTS, CONTENT, MESSAGES, ROUTES, ASSETS, formatDateISO, getReadingTime } from '../config';
+import { SITE, SOCIAL, TERMINAL_PROMPTS, MESSAGES, ROUTES, ASSETS, CONTENT } from '../config';
+import { getSortedPosts, calculateReadingTime } from '../lib/posts';
+import { formatDateISO } from '../lib/utils';
 
 // Obtener posts
-const allPosts = await getCollection('blog');
-const posts = allPosts
-  .filter(post => !post.data.draft)
-  .sort((a, b) => new Date(b.data.pubDatetime).getTime() - new Date(a.data.pubDatetime).getTime());
-
+const posts = await getSortedPosts();
 const totalPosts = posts.length;
 ---
 
@@ -79,7 +76,7 @@ const totalPosts = posts.length;
     <!-- Lista de posts tipo terminal -->
     <div class="space-y-0">
       {posts.map((post) => {
-        const readingTime = getReadingTime(post.body || '');
+        const readingTime = calculateReadingTime(post.body || '');
         return (
           <article class="row-terminal-vertical group">
             <a href={`${ROUTES.posts}/${post.id}`} class="block py-5">
