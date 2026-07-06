@@ -29,6 +29,23 @@ export const commentsTable = sqliteTable("comments", {
   uniqueIndex("comments_post_slug_idx").on(table.postSlug),
   // Índice para rate limiting por anonymousId
   uniqueIndex("comments_anonymous_id_idx").on(table.anonymousId),
+  // Índice para búsquedas por fingerprint
+  uniqueIndex("comments_fingerprint_idx").on(table.backupFingerprint),
+]));
+
+// Tabla de blacklist - usuarios baneados permanentemente
+export const blacklistTable = sqliteTable("blacklist", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  anonymousId: text("anonymous_id").notNull(), // Identificador anónimo
+  fingerprint: text("fingerprint").notNull(), // Hash de IP + navegador
+  bannedAt: integer("banned_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+  reason: text("reason").notNull(), // Razón del baneo
+  commentCount: integer("comment_count").notNull(), // Cantidad de comentarios que disparó el baneo
+}, (table) => ([
+  // Índice único para evitar duplicados
+  uniqueIndex("blacklist_anonymous_id_idx").on(table.anonymousId),
+  // Índice para búsquedas por fingerprint
+  uniqueIndex("blacklist_fingerprint_idx").on(table.fingerprint),
 ]));
 
 // Types inferidos
@@ -37,3 +54,6 @@ export type NewPostView = typeof postViewsTable.$inferInsert;
 
 export type Comment = typeof commentsTable.$inferSelect;
 export type NewComment = typeof commentsTable.$inferInsert;
+
+export type BlacklistEntry = typeof blacklistTable.$inferSelect;
+export type NewBlacklistEntry = typeof blacklistTable.$inferInsert;
