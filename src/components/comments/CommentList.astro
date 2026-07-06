@@ -7,17 +7,18 @@ const { postSlug } = Astro.props;
 ---
 
 <div class="comments-section">
-  <h3 class="comments-title">
+  <div class="comments-header">
+    <h3 class="comments-title">Conversación</h3>
     <span class="comments-count">...</span>
-  </h3>
+  </div>
 
   <div id="comments-container" class="comments-container" data-post-slug={postSlug}>
-    <div class="loading-comments">
-      <div class="loading-avatar skeleton"></div>
-      <div class="loading-content">
-        <div class="loading-line skeleton" style="width: 120px;"></div>
-        <div class="loading-line skeleton" style="width: 100%;"></div>
-        <div class="loading-line skeleton" style="width: 80%;"></div>
+    <div class="loading-state">
+      <div class="loading-avatar"></div>
+      <div class="loading-lines">
+        <div class="loading-line short"></div>
+        <div class="loading-line"></div>
+        <div class="loading-line medium"></div>
       </div>
     </div>
   </div>
@@ -25,57 +26,79 @@ const { postSlug } = Astro.props;
 
 <style>
   .comments-section {
-    margin-top: 2rem;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid #2a2a2f;
+  }
+
+  .comments-header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
   }
 
   .comments-title {
-    color: #e4e4e7;
-    font-size: 1.25rem;
+    font-size: 0.75rem;
     font-weight: 600;
-    margin-bottom: 1.5rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid #2a2a2f;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #71717a;
+    margin: 0;
+  }
+
+  .comments-count {
+    font-size: 0.75rem;
+    color: #52525b;
+    font-weight: 500;
   }
 
   .comments-container {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0;
   }
 
-  /* Skeleton loading */
-  .loading-comments {
+  /* Loading skeleton */
+  .loading-state {
     display: flex;
-    gap: 0.875rem;
-    padding: 1rem;
-    background: #1a1a1f;
-    border: 1px solid #2a2a2f;
-    border-radius: 8px;
+    gap: 1rem;
+    padding: 1.5rem 0;
+    opacity: 0.6;
   }
 
   .loading-avatar {
-    width: 32px;
-    height: 32px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
+    background: linear-gradient(90deg, #2a2a2f 25%, #3a3a3f 50%, #2a2a2f 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
     flex-shrink: 0;
   }
 
-  .loading-content {
+  .loading-lines {
     flex: 1;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    padding-top: 0.5rem;
   }
 
   .loading-line {
-    height: 0.875rem;
-    border-radius: 4px;
-  }
-
-  .skeleton {
+    height: 12px;
+    border-radius: 3px;
     background: linear-gradient(90deg, #2a2a2f 25%, #3a3a3f 50%, #2a2a2f 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
+  }
+
+  .loading-line.short {
+    width: 120px;
+  }
+
+  .loading-line.medium {
+    width: 70%;
   }
 
   @keyframes shimmer {
@@ -83,64 +106,84 @@ const { postSlug } = Astro.props;
     100% { background-position: -200% 0; }
   }
 
-  /* No comments state */
-  .no-comments {
+  /* Empty state */
+  .empty-state {
     text-align: center;
-    padding: 2.5rem 1.5rem;
-    color: #71717a;
-    font-style: italic;
-    background: #1a1a1f;
-    border-radius: 8px;
-    border: 1px dashed #3a3a3f;
+    padding: 3rem 1.5rem;
+    color: #52525b;
+    border: 2px dashed #2a2a2f;
+    border-radius: 12px;
+    margin: 1rem 0;
   }
 
-  /* Comment item */
+  .empty-state-icon {
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+    opacity: 0.5;
+  }
+
+  .empty-state p {
+    margin: 0;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+
+  /* Comment thread styling */
+  .comment-thread {
+    position: relative;
+    padding: 1.25rem 0;
+  }
+
+  .comment-thread:not(:last-child) {
+    border-bottom: 1px solid #1f1f23;
+  }
+
+  .comment-thread::before {
+    content: '';
+    position: absolute;
+    left: 22px;
+    top: 80px;
+    bottom: 0;
+    width: 2px;
+    background: #2a2a2f;
+    opacity: 0.5;
+  }
+
+  .comment-thread:last-child::before {
+    display: none;
+  }
+
+  /* Individual comment */
   .comment-item {
     display: flex;
-    gap: 0.875rem;
-    padding: 1rem;
-    background: #1a1a1f;
-    border: 1px solid #2a2a2f;
-    border-radius: 8px;
-    transition: border-color 0.2s ease;
+    gap: 1rem;
+    position: relative;
   }
 
-  .comment-item:hover {
-    border-color: #3a3a3f;
-  }
-
-  .comment-item.current-user {
-    border-color: #4a9eff;
-    background: linear-gradient(135deg, #1a1a1f 0%, #1e2a3a 100%);
-  }
-
-  /* Avatar con aspect-ratio para evitar saltos */
-  .comment-avatar {
+  /* Avatar with story ring */
+  .comment-avatar-wrapper {
+    position: relative;
     flex-shrink: 0;
-    width: 32px;
-    height: 32px;
+  }
+
+  .comment-avatar {
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     overflow: hidden;
     background: #2a2a2f;
-    border: 2px solid #3a3a3f;
     position: relative;
-    aspect-ratio: 1 / 1;
+    transition: transform 0.2s ease;
   }
 
-  .comment-avatar::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, #2a2a2f 0%, #1a1a1f 100%);
-    z-index: 0;
+  .comment-item:hover .comment-avatar {
+    transform: scale(1.05);
   }
 
   .comment-avatar img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    position: relative;
-    z-index: 1;
     opacity: 0;
     transition: opacity 0.3s ease;
   }
@@ -149,88 +192,152 @@ const { postSlug } = Astro.props;
     opacity: 1;
   }
 
-  /* Content layout */
+  /* Story ring - only for current user */
+  .comment-avatar-ring {
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+  }
+
+  .comment-item.current-user .comment-avatar-ring {
+    border-color: #ff6b35;
+    box-shadow: 0 0 0 1px #0a0a0f, 0 0 12px rgba(255, 107, 53, 0.3);
+  }
+
+  /* Content area */
   .comment-content {
     flex: 1;
     min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.375rem;
+    padding-top: 0.25rem;
   }
 
+  /* Header with name and time */
   .comment-header {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    margin-bottom: 0.375rem;
     flex-wrap: wrap;
   }
 
   .comment-author {
-    color: #ff6b35;
-    font-weight: 600;
     font-size: 0.875rem;
+    font-weight: 600;
+    color: #e4e4e7;
+    letter-spacing: -0.01em;
+  }
+
+  .comment-item.current-user .comment-author {
+    color: #ff6b35;
   }
 
   .comment-meta {
     display: flex;
     align-items: center;
     gap: 0.375rem;
+    font-size: 0.75rem;
+    color: #52525b;
+  }
+
+  .comment-meta::before {
+    content: '·';
+    color: #3a3a3f;
   }
 
   .comment-date {
-    color: #71717a;
-    font-size: 0.75rem;
+    font-weight: 400;
   }
 
-  .current-user-badge {
-    font-size: 0.625rem;
-    padding: 0.125rem 0.375rem;
-    background: #4a9eff;
-    color: #0a0a0f;
-    border-radius: 4px;
-    font-weight: 600;
-  }
-
+  /* Flag badge */
   .flag-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
     font-size: 0.6875rem;
-    padding: 0.125rem 0.375rem;
-    background: rgba(245, 158, 11, 0.15);
-    border: 1px solid rgba(245, 158, 11, 0.3);
+    padding: 0.125rem 0.5rem;
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.25);
     color: #f59e0b;
-    border-radius: 4px;
+    border-radius: 20px;
+    font-weight: 500;
   }
 
+  /* Comment text - larger and more prominent */
   .comment-text {
-    color: #d4d4d8;
-    font-size: 0.9375rem;
+    font-size: 1rem;
     line-height: 1.6;
+    color: #d4d4d8;
     margin: 0;
     word-wrap: break-word;
+    letter-spacing: -0.01em;
+  }
+
+  /* Current user styling */
+  .comment-item.current-user {
+    background: linear-gradient(135deg, rgba(255, 107, 53, 0.03) 0%, transparent 100%);
+    margin: 0 -1rem;
+    padding: 1.25rem 1rem;
+    border-radius: 12px;
+    position: relative;
+  }
+
+  .comment-item.current-user::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, #ff6b35, #ff8555);
+    border-radius: 3px 0 0 3px;
+    opacity: 0.8;
   }
 
   /* Error state */
-  .error-comments {
+  .error-state {
     text-align: center;
     padding: 2rem;
     color: #ef4444;
-    background: rgba(239, 68, 68, 0.05);
-    border-radius: 8px;
-    border: 1px solid rgba(239, 68, 68, 0.2);
+    background: rgba(239, 68, 68, 0.03);
+    border: 1px solid rgba(239, 68, 68, 0.15);
+    border-radius: 12px;
+    margin: 1rem 0;
   }
 
+  .error-state p {
+    margin: 0;
+    font-size: 0.875rem;
+  }
+
+  /* Responsive */
   @media (max-width: 640px) {
-    .comment-item {
-      padding: 0.875rem;
-      gap: 0.75rem;
+    .comment-thread::before {
+      left: 19px;
     }
 
     .comment-avatar {
-      width: 28px;
-      height: 28px;
+      width: 38px;
+      height: 38px;
     }
 
-    .comment-header {
-      gap: 0.375rem;
+    .comment-avatar-ring {
+      inset: -2px;
+      border-width: 2px;
+    }
+
+    .comment-item {
+      gap: 0.75rem;
+    }
+
+    .comment-text {
+      font-size: 0.9375rem;
+    }
+
+    .comment-item.current-user {
+      margin: 0 -0.75rem;
+      padding: 1rem 0.75rem;
     }
   }
 </style>
@@ -246,41 +353,46 @@ const { postSlug } = Astro.props;
 
   function renderComment(comment: any): string {
     const date = new Date(comment.createdAt);
-    const timeAgo = formatDistanceToNow(date, { addSuffix: true, locale: es });
+    const timeAgo = formatDistanceToNow(date, { addSuffix: false, locale: es });
     const isCurrentUser = comment.anonymousId === currentAnonymousId;
     
     return `
-      <article class="comment-item ${isCurrentUser ? 'current-user' : ''}" data-anonymous-id="${comment.anonymousId}">
-        <div class="comment-avatar">
-          <img 
-            src="https://api.dicebear.com/10.x/lorelei-neutral/svg?seed=${encodeURIComponent(comment.anonymousId)}"
-            alt=""
-            loading="lazy"
-            width="32"
-            height="32"
-            onload="this.classList.add('loaded')"
-          />
-        </div>
-        <div class="comment-content">
-          <header class="comment-header">
-            <span class="comment-author">
-              ${escapeHtml(comment.authorName || "Anónimo")}
-            </span>
-            <span class="comment-meta">
-              <span class="comment-date" title="${date.toLocaleString("es-ES")}">
-                ${timeAgo}
+      <div class="comment-thread">
+        <article class="comment-item ${isCurrentUser ? 'current-user' : ''}" data-anonymous-id="${comment.anonymousId}">
+          <div class="comment-avatar-wrapper">
+            <div class="comment-avatar-ring"></div>
+            <div class="comment-avatar">
+              <img 
+                src="https://api.dicebear.com/10.x/lorelei-neutral/svg?seed=${encodeURIComponent(comment.anonymousId)}"
+                alt=""
+                loading="lazy"
+                width="44"
+                height="44"
+                onload="this.classList.add('loaded')"
+              />
+            </div>
+          </div>
+          <div class="comment-content">
+            <header class="comment-header">
+              <span class="comment-author">
+                ${isCurrentUser ? 'Tú' : escapeHtml(comment.authorName || "Anónimo")}
               </span>
-              ${isCurrentUser ? '<span class="current-user-badge">Tú</span>' : ''}
+              <span class="comment-meta">
+                <span class="comment-date" title="${date.toLocaleString("es-ES")}">
+                  ${timeAgo}
+                </span>
+              </span>
               ${comment.isFlagged ? `
                 <span class="flag-badge" title="Contenido censurado por lenguaje inapropiado">
-                  ⚠️ Censurado
+                  <span>⚠️</span>
+                  <span>Censurado</span>
                 </span>
               ` : ""}
-            </span>
-          </header>
-          <p class="comment-text">${escapeHtml(comment.content)}</p>
-        </div>
-      </article>
+            </header>
+            <p class="comment-text">${escapeHtml(comment.content)}</p>
+          </div>
+        </article>
+      </div>
     `;
   }
 
@@ -290,7 +402,6 @@ const { postSlug } = Astro.props;
     return div.innerHTML;
   }
 
-  // Cargar comentarios iniciales
   async function loadComments() {
     const postSlug = container?.getAttribute("data-post-slug");
     if (!postSlug || !container) return;
@@ -299,18 +410,19 @@ const { postSlug } = Astro.props;
       const { data } = await actions.getComments({ postSlug });
       const comments = data?.comments || [];
 
-      // Actualizar título
-      const titleElement = document.querySelector(".comments-count");
-      if (titleElement) {
-        titleElement.textContent = comments.length === 0 
+      // Update header
+      const countElement = document.querySelector(".comments-count");
+      if (countElement) {
+        countElement.textContent = comments.length === 0 
           ? "Sin comentarios" 
-          : `${comments.length} ${comments.length === 1 ? 'comentario' : 'comentarios'}`;
+          : `${comments.length}`;
       }
 
       if (comments.length === 0) {
         container.innerHTML = `
-          <div class="no-comments">
-            <p>Sé el primero en comentar 📝</p>
+          <div class="empty-state">
+            <div class="empty-state-icon">💬</div>
+            <p>Sé el primero en compartir tu perspectiva</p>
           </div>
         `;
         return;
@@ -320,21 +432,17 @@ const { postSlug } = Astro.props;
     } catch (error) {
       console.error("Error loading comments:", error);
       container.innerHTML = `
-        <div class="error-comments">
-          <p>No se pudieron cargar los comentarios. Intenta recargar la página.</p>
+        <div class="error-state">
+          <p>No se pudieron cargar los comentarios</p>
         </div>
       `;
     }
   }
 
-  // Recargar comentarios (llamado después de enviar uno nuevo)
   async function reloadComments() {
     await loadComments();
   }
 
-  // Cargar al iniciar
   loadComments();
-
-  // Escuchar evento de nuevo comentario
   window.addEventListener("comment-submitted", reloadComments);
 </script>
