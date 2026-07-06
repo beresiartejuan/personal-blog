@@ -4,7 +4,7 @@ import { es } from "date-fns/locale";
 import { getAnonymousId } from "@/lib/visitor";
 import { actions } from "astro:actions";
 import type { Comment } from "@/db/schema";
-import "./CommentList.css";
+import "@/styles/comments.css";
 
 interface CommentListProps {
   postSlug: string;
