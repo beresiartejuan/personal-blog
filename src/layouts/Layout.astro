@@ -1,15 +1,29 @@
 ---
 import './../styles/global.css';
+import { SEO } from "astro-seo";
 import { SITE, SOCIAL, ROUTES, NAV_LABELS, TERMINAL_PROMPTS, ASSETS, EXTERNAL, getPageTitle } from '../config';
 
 interface Props {
   title?: string;
   description?: string;
+  ogImage?: string;
+  canonicalURL?: string;
+  noindex?: boolean;
 }
 
-const { title, description = SITE.defaultDescription } = Astro.props;
+const { 
+  title, 
+  description = SITE.defaultDescription,
+  ogImage = ASSETS.profilePhotos[0],
+  canonicalURL,
+  noindex = false,
+} = Astro.props;
+
 const pageTitle = getPageTitle(title);
 const currentYear = new Date().getFullYear();
+
+const fullCanonicalURL = canonicalURL ? `${SITE.url}${canonicalURL}` : `${SITE.url}${Astro.url.pathname}`;
+const fullOgImageURL = `${SITE.url}${ogImage}`;
 ---
 
 <!DOCTYPE html>
@@ -17,12 +31,46 @@ const currentYear = new Date().getFullYear();
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content={description} />
-    <link rel="icon" type="image/svg+xml" href={ASSETS.faviconSvg} />
-    <link rel="icon" type="image/x-icon" href={ASSETS.faviconIco} />
-    <title>{pageTitle}</title>
-    <link rel="preconnect" href={EXTERNAL.googleFontsPreconnect}>
-    <link rel="preconnect" href={EXTERNAL.googleFontsGStatic} crossorigin>
+    <SEO
+      title={pageTitle}
+      description={description}
+      canonical={fullCanonicalURL}
+      noindex={noindex}
+      openGraph={{
+        basic: {
+          title: pageTitle,
+          type: "website",
+          image: fullOgImageURL,
+        },
+        optional: {
+          description: description,
+          siteName: SITE.title,
+        },
+        image: {
+          alt: `Imagen de ${SITE.author}`,
+        },
+      }}
+      twitter={{
+        card: "summary_large_image",
+        site: "@beresiarte",
+        creator: "@beresiarte",
+        title: pageTitle,
+        description: description,
+        image: fullOgImageURL,
+        imageAlt: `Imagen de ${SITE.author}`,
+      }}
+      extend={{
+        link: [
+          { rel: "icon", type: "image/svg+xml", href: ASSETS.faviconSvg },
+          { rel: "icon", type: "image/x-icon", href: ASSETS.faviconIco },
+          { rel: "preconnect", href: EXTERNAL.googleFontsPreconnect },
+          { rel: "preconnect", href: EXTERNAL.googleFontsGStatic, crossorigin: "anonymous" },
+        ],
+        meta: [
+          { name: "author", content: SITE.author },
+        ],
+      }}
+    />
     <link href={EXTERNAL.googleFontsStylesheet} rel="stylesheet">
   </head>
   <body class="min-h-screen flex flex-col">
