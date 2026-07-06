@@ -6,254 +6,166 @@ interface Props {
 const { postSlug } = Astro.props;
 ---
 
-<div class="comment-composer" data-post-slug={postSlug}>
-  <div class="composer-header">
-    <span class="composer-label">Añadir comentario</span>
+<form id="comment-form" class="comment-form" data-post-slug={postSlug}>
+  {/* Campo trampa - invisible para usuarios reales, visible para bots */}
+  <div class="honeypot-field" aria-hidden="true">
+    <input 
+      type="text" 
+      name="website" 
+      id="website" 
+      tabindex="-1" 
+      autocomplete="off"
+      placeholder="No llenar este campo"
+    />
   </div>
-  
-  <form id="comment-form" class="comment-form">
-    {/* Campo trampa */}
-    <div class="honeypot-field" aria-hidden="true">
-      <input type="text" name="website" tabindex="-1" autocomplete="off" />
-    </div>
 
-    <div class="composer-body">
-      <div class="form-field">
-        <input 
-          type="text" 
-          id="author-name" 
-          name="authorName" 
-          maxlength="50"
-          placeholder="Tu nombre (opcional)"
-          class="name-input"
-        />
-      </div>
+  <div class="form-group">
+    <label for="author-name">Nombre (opcional)</label>
+    <input 
+      type="text" 
+      id="author-name" 
+      name="authorName" 
+      maxlength="50"
+      placeholder="Anónimo"
+      class="form-input"
+    />
+  </div>
 
-      <div class="form-field">
-        <textarea 
-          id="comment-content" 
-          name="content" 
-          rows="3" 
-          maxlength="2000"
-          required
-          placeholder="¿Qué piensas?"
-          class="content-input"
-        ></textarea>
-        <div class="composer-footer">
-          <span class="char-count">0/2000</span>
-          <button type="submit" class="submit-btn" disabled>
-            <span class="btn-text">Publicar</span>
-            <span class="btn-loader">
-              <svg width="16" height="16" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" stroke-dasharray="31.416" stroke-dashoffset="31.416">
-                  <animate attributeName="stroke-dashoffset" from="31.416" to="0" dur="1s" repeatCount="indefinite" />
-                </circle>
-              </svg>
-            </span>
-          </button>
-        </div>
-      </div>
-    </div>
-  </form>
+  <div class="form-group">
+    <label for="comment-content">
+      Comentario <span class="required">*</span>
+    </label>
+    <textarea 
+      id="comment-content" 
+      name="content" 
+      rows="4" 
+      maxlength="2000"
+      required
+      placeholder="Escribe tu comentario..."
+      class="form-textarea"
+    ></textarea>
+    <span class="char-count">0 / 2000</span>
+  </div>
 
-  <div id="form-message" class="form-message" role="alert"></div>
-</div>
+  <button type="submit" class="submit-button" disabled>
+    <span class="button-text">Enviar comentario</span>
+    <span class="button-loader" style="display: none;">Enviando...</span>
+  </button>
+
+  <div id="form-message" class="form-message" role="alert" style="display: none;"></div>
+</form>
 
 <style>
-  .comment-composer {
-    margin-bottom: 1.5rem;
-    background: #151519;
-    border: 1px solid #2a2a2f;
-    border-radius: 12px;
-    overflow: hidden;
-  }
-
-  .composer-header {
-    padding: 0.875rem 1.25rem;
+  .comment-form {
     background: #1a1a1f;
-    border-bottom: 1px solid #2a2a2f;
-  }
-
-  .composer-label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #71717a;
-  }
-
-  .composer-body {
-    padding: 1.25rem;
+    border: 1px solid #2a2a2f;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
   }
 
   .honeypot-field {
     position: absolute;
     left: -9999px;
     opacity: 0;
+    pointer-events: none;
   }
 
-  .form-field {
-    margin-bottom: 1rem;
+  .form-group {
+    margin-bottom: 1.25rem;
   }
 
-  .form-field:last-child {
-    margin-bottom: 0;
-  }
-
-  .name-input {
-    width: 100%;
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid #2a2a2f;
-    padding: 0.5rem 0;
+  label {
+    display: block;
     color: #e4e4e7;
     font-size: 0.875rem;
     font-weight: 500;
-    transition: border-color 0.2s ease;
+    margin-bottom: 0.5rem;
   }
 
-  .name-input:focus {
-    outline: none;
-    border-color: #ff6b35;
+  .required {
+    color: #ff6b35;
   }
 
-  .name-input::placeholder {
-    color: #52525b;
-  }
-
-  .content-input {
+  .form-input,
+  .form-textarea {
     width: 100%;
-    background: transparent;
-    border: none;
-    padding: 0.5rem 0;
+    background: #0a0a0f;
+    border: 1px solid #3a3a3f;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
     color: #e4e4e7;
-    font-size: 1rem;
-    line-height: 1.6;
-    resize: none;
-    min-height: 80px;
+    font-size: 0.9375rem;
+    transition: border-color 0.2s ease;
     font-family: inherit;
   }
 
-  .content-input:focus {
+  .form-input:focus,
+  .form-textarea:focus {
     outline: none;
+    border-color: #4a9eff;
   }
 
-  .content-input::placeholder {
-    color: #52525b;
-  }
-
-  .composer-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-top: 0.75rem;
-    border-top: 1px solid #2a2a2f;
+  .form-textarea {
+    resize: vertical;
+    min-height: 100px;
   }
 
   .char-count {
+    display: block;
+    text-align: right;
+    color: #71717a;
     font-size: 0.75rem;
-    color: #52525b;
-    font-weight: 500;
+    margin-top: 0.25rem;
   }
 
-  .char-count.near-limit {
-    color: #f59e0b;
-  }
-
-  .submit-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1.25rem;
+  .submit-button {
+    width: 100%;
     background: #ff6b35;
     color: #0a0a0f;
     border: none;
-    border-radius: 20px;
-    font-size: 0.875rem;
+    border-radius: 6px;
+    padding: 0.875rem 1.5rem;
+    font-size: 0.9375rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
   }
 
-  .submit-btn:hover:not(:disabled) {
+  .submit-button:hover:not(:disabled) {
     background: #ff8555;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
   }
 
-  .submit-btn:disabled {
-    background: #2a2a2f;
-    color: #52525b;
+  .submit-button:disabled {
+    background: #3a3a3f;
+    color: #71717a;
     cursor: not-allowed;
   }
 
-  .btn-loader {
-    display: none;
-    animation: spin 1s linear infinite;
-  }
-
-  .btn-loader svg {
-    display: block;
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-
-  .submit-btn.loading .btn-text {
-    display: none;
-  }
-
-  .submit-btn.loading .btn-loader {
-    display: block;
-  }
-
   .form-message {
-    margin: 0 1.25rem 1.25rem;
+    margin-top: 1rem;
     padding: 0.875rem 1rem;
-    border-radius: 8px;
+    border-radius: 6px;
     font-size: 0.875rem;
-    display: none;
   }
 
   .form-message.success {
-    display: block;
     background: rgba(34, 197, 94, 0.1);
-    border: 1px solid rgba(34, 197, 94, 0.2);
+    border: 1px solid rgba(34, 197, 94, 0.3);
     color: #22c55e;
   }
 
   .form-message.error {
-    display: block;
     background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.3);
     color: #ef4444;
   }
 
   .form-message.warning {
-    display: block;
     background: rgba(245, 158, 11, 0.1);
-    border: 1px solid rgba(245, 158, 11, 0.2);
+    border: 1px solid rgba(245, 158, 11, 0.3);
     color: #f59e0b;
-  }
-
-  @media (max-width: 640px) {
-    .composer-header {
-      padding: 0.75rem 1rem;
-    }
-
-    .composer-body {
-      padding: 1rem;
-    }
-
-    .content-input {
-      font-size: 0.9375rem;
-    }
-
-    .composer-footer {
-      flex-wrap: wrap;
-      gap: 0.75rem;
-    }
   }
 </style>
 
@@ -261,43 +173,31 @@ const { postSlug } = Astro.props;
   import { actions } from "astro:actions";
   import { getAnonymousId } from "@/lib/visitor";
 
-  const composer = document.querySelector(".comment-composer");
   const form = document.getElementById("comment-form") as HTMLFormElement;
   const contentInput = document.getElementById("comment-content") as HTMLTextAreaElement;
   const charCount = document.querySelector(".char-count") as HTMLElement;
-  const submitBtn = form?.querySelector(".submit-btn") as HTMLButtonElement;
+  const submitButton = form?.querySelector(".submit-button") as HTMLButtonElement;
+  const buttonText = submitButton?.querySelector(".button-text") as HTMLElement;
+  const buttonLoader = submitButton?.querySelector(".button-loader") as HTMLElement;
   const formMessage = document.getElementById("form-message") as HTMLElement;
 
-  // Auto-resize textarea
   contentInput?.addEventListener("input", () => {
     const length = contentInput.value.length;
-    charCount.textContent = `${length}/2000`;
-    
-    // Visual feedback near limit
-    if (length > 1800) {
-      charCount.classList.add("near-limit");
-    } else {
-      charCount.classList.remove("near-limit");
-    }
-    
-    submitBtn.disabled = length === 0;
-    
-    // Auto-resize
-    contentInput.style.height = "auto";
-    contentInput.style.height = contentInput.scrollHeight + "px";
+    charCount.textContent = `${length} / 2000`;
+    submitButton.disabled = length === 0;
   });
 
   form?.addEventListener("submit", async (e) => {
     e.preventDefault();
     
-    const postSlug = composer?.getAttribute("data-post-slug");
+    const postSlug = form.dataset.postSlug;
     const formData = new FormData(form);
     
-    // Loading state
-    submitBtn.disabled = true;
-    submitBtn.classList.add("loading");
-    formMessage.className = "form-message";
+    submitButton.disabled = true;
+    buttonText.style.display = "none";
+    buttonLoader.style.display = "inline";
     formMessage.style.display = "none";
+    formMessage.className = "form-message";
 
     try {
       const fingerprint = btoa(navigator.userAgent).slice(0, 16);
@@ -313,25 +213,27 @@ const { postSlug } = Astro.props;
 
       if (result.data?.success) {
         form.reset();
-        charCount.textContent = "0/2000";
-        charCount.classList.remove("near-limit");
-        contentInput.style.height = "auto";
+        charCount.textContent = "0 / 2000";
         
         formMessage.textContent = result.data.message;
-        formMessage.classList.add(result.data.message.includes("censurado") ? "warning" : "success");
-        
+        formMessage.classList.add("success");
+        formMessage.style.display = "block";
+
         window.dispatchEvent(new CustomEvent("comment-submitted"));
       } else {
-        formMessage.textContent = result.data?.message || "Error al enviar";
+        formMessage.textContent = result.data?.message || "Error al enviar el comentario";
         formMessage.classList.add("error");
+        formMessage.style.display = "block";
       }
     } catch (error) {
-      console.error("Error:", error);
-      formMessage.textContent = "Error de conexión. Intenta nuevamente.";
+      console.error("Error submitting comment:", error);
+      formMessage.textContent = "Error de conexión. Por favor, intenta nuevamente.";
       formMessage.classList.add("error");
+      formMessage.style.display = "block";
     } finally {
-      submitBtn.disabled = false;
-      submitBtn.classList.remove("loading");
+      submitButton.disabled = false;
+      buttonText.style.display = "inline";
+      buttonLoader.style.display = "none";
     }
   });
 </script>
