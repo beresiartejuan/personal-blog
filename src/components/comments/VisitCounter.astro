@@ -1,20 +1,14 @@
 ---
-import { actions } from "astro:actions";
-
 interface Props {
   postSlug: string;
 }
 
 const { postSlug } = Astro.props;
-
-// Obtener el conteo actual de visitas
-const { data } = await actions.recordVisit({ postSlug, anonymousId: "server-side" });
-const viewCount = data?.viewCount || 0;
 ---
 
-<div class="visit-counter" data-post-slug={postSlug} data-initial-count={viewCount}>
+<div class="visit-counter" data-post-slug={postSlug}>
   <span class="visit-icon">👁️</span>
-  <span class="visit-count">{viewCount.toLocaleString("es-ES")}</span>
+  <span class="visit-count">...</span>
   <span class="visit-label">visitas</span>
 </div>
 
@@ -55,35 +49,32 @@ const viewCount = data?.viewCount || 0;
   import { actions } from "astro:actions";
   import { getAnonymousId } from "@/lib/visitor";
 
-  const counter = document.querySelector(".visit-counter");
-  const postSlug = counter?.getAttribute("data-post-slug");
-  const countElement = counter?.querySelector(".visit-count");
+  const counters = document.querySelectorAll(".visit-counter");
 
-  // Solo registrar visita del lado del cliente (no en SSR)
-  if (postSlug && typeof window !== "undefined") {
+  counters.forEach((counter) => {
+    const postSlug = counter.getAttribute("data-post-slug");
+    const countElement = counter.querySelector(".visit-count");
+    
+    if (!postSlug || !countElement) return;
+
     const anonymousId = getAnonymousId();
     
     // Registrar la visita y obtener el conteo actualizado
     actions.recordVisit({ postSlug, anonymousId })
       .then(({ data }) => {
-        if (data?.viewCount && countElement) {
-          // Animar el cambio de número
+        if (data?.viewCount) {
           animateNumber(countElement, data.viewCount);
         }
       })
       .catch((error) => {
         console.error("Error recording visit:", error);
+        countElement.textContent = "0";
       });
-  }
+  });
 
   // Animación suave del número
   function animateNumber(element: Element, targetNumber: number): void {
-    const currentText = element.textContent?.replace(/\./g, "") || "0";
-    const currentNumber = parseInt(currentText, 10);
-    
-    if (currentNumber === targetNumber) return;
-
-    const duration = 500;
+    const duration = 800;
     const startTime = performance.now();
     
     function update(currentTime: number): void {
@@ -92,7 +83,7 @@ const viewCount = data?.viewCount || 0;
       
       // Easing ease-out
       const easeOut = 1 - Math.pow(1 - progress, 3);
-      const current = Math.round(currentNumber + (targetNumber - currentNumber) * easeOut);
+      const current = Math.round(targetNumber * easeOut);
       
       element.textContent = current.toLocaleString("es-ES");
       

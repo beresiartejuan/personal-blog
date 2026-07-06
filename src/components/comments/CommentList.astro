@@ -1,62 +1,20 @@
 ---
-import { actions } from "astro:actions";
-import { formatDistanceToNow } from "date-fns";
-import { es } from "date-fns/locale";
-
 interface Props {
   postSlug: string;
 }
 
 const { postSlug } = Astro.props;
-
-// Obtener comentarios del servidor
-const { data } = await actions.getComments({ postSlug });
-const comments = data?.comments || [];
 ---
 
 <div class="comments-section">
   <h3 class="comments-title">
-    {comments.length === 0 
-      ? "No hay comentarios aún" 
-      : `${comments.length} ${comments.length === 1 ? 'comentario' : 'comentarios'}`
-    }
+    <span class="comments-count">...</span>
   </h3>
 
   <div id="comments-container" class="comments-container" data-post-slug={postSlug}>
-    {comments.length === 0 ? (
-      <div class="no-comments">
-        <p>Sé el primero en comentar 📝</p>
-      </div>
-    ) : (
-      comments.map((comment) => (
-        <article class="comment-item" data-anonymous-id={comment.anonymousId}>
-          <div class="comment-avatar">
-            <img 
-              src={`https://api.dicebear.com/10.x/lorelei-neutral/svg?seed=${encodeURIComponent(comment.anonymousId)}`}
-              alt="Avatar anónimo"
-              loading="lazy"
-            />
-          </div>
-          <div class="comment-content">
-            <header class="comment-header">
-              <span class="comment-author">
-                {comment.authorName || "Anónimo"}
-              </span>
-              <span class="comment-date" title={new Date(comment.createdAt).toLocaleString("es-ES")}>
-                {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: es })}
-              </span>
-              {comment.isFlagged && (
-                <span class="flag-badge" title="Contenido censurado por lenguaje inapropiado">
-                  ⚠️ Censurado
-                </span>
-              )}
-            </header>
-            <p class="comment-text">{comment.content}</p>
-            <span class="current-user-badge" style="display: none;">Tú</span>
-          </div>
-        </article>
-      ))
-    )}
+    <div class="loading-comments">
+      <p>Cargando comentarios...</p>
+    </div>
   </div>
 </div>
 
@@ -80,10 +38,14 @@ const comments = data?.comments || [];
     gap: 1.25rem;
   }
 
+  .loading-comments,
   .no-comments {
     text-align: center;
     padding: 2rem;
     color: #71717a;
+  }
+
+  .no-comments {
     font-style: italic;
     background: #1a1a1f;
     border-radius: 8px;
@@ -199,33 +161,69 @@ const comments = data?.comments || [];
 <script>
   import { getAnonymousId } from "@/lib/visitor";
   import { actions } from "astro:actions";
+  import { formatDistanceToNow } from "date-fns";
+  import { es } from "date-fns/locale";
 
   const container = document.getElementById("comments-container");
   const currentAnonymousId = getAnonymousId();
 
-  // Marcar comentarios del usuario actual
-  function markCurrentUserComments() {
-    const comments = container?.querySelectorAll(".comment-item");
-    comments?.forEach((comment) => {
-      const commentId = comment.getAttribute("data-anonymous-id");
-      if (commentId === currentAnonymousId) {
-        comment.classList.add("current-user");
-        const badge = comment.querySelector(".current-user-badge") as HTMLElement | null;
-        if (badge) {
-          badge.style.display = "inline-block";
-        }
-      }
-    });
+  function renderComment(comment: any): string {
+    const date = new Date(comment.createdAt);
+    const timeAgo = formatDistanceToNow(date, { addSuffix: true, locale: es });
+    const isCurrentUser = comment.anonymousId === currentAnonymousId;
+    
+    return `
+      <article class="comment-item ${isCurrentUser ? 'current-user' : ''}" data-anonymous-id="${comment.anonymousId}">
+        <div class="comment-avatar">
+          <img 
+            src="https://api.dicebear.com/10.x/lorelei-neutral/svg?seed=${encodeURIComponent(comment.anonymousId)}"
+            alt="Avatar anónimo"
+            loading="lazy"
+          />
+        </div>
+        <div class="comment-content">
+          <header class="comment-header">
+            <span class="comment-author">
+              ${comment.authorName || "Anónimo"}
+            </span>
+            <span class="comment-date" title="${date.toLocaleString("es-ES")}">
+              ${timeAgo}
+            </span>
+            ${comment.isFlagged ? `
+              <span class="flag-badge" title="Contenido censurado por lenguaje inapropiado">
+                ⚠️ Censurado
+              </span>
+            ` : ""}
+          </header>
+          <p class="comment-text">${escapeHtml(comment.content)}</p>
+          ${isCurrentUser ? '<span class="current-user-badge">Tú</span>' : ''}
+        </div>
+      </article>
+    `;
   }
 
-  // Recargar comentarios
-  async function reloadComments() {
+  function escapeHtml(text: string): string {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // Cargar comentarios iniciales
+  async function loadComments() {
     const postSlug = container?.getAttribute("data-post-slug");
     if (!postSlug || !container) return;
 
     try {
       const { data } = await actions.getComments({ postSlug });
       const comments = data?.comments || [];
+
+      // Actualizar título
+      const titleElement = document.querySelector(".comments-count");
+      if (titleElement) {
+        titleElement.textContent = comments.length === 0 
+          ? "No hay comentarios aún" 
+          : `${comments.length} ${comments.length === 1 ? 'comentario' : 'comentarios'}`;
+      }
 
       if (comments.length === 0) {
         container.innerHTML = `
@@ -236,49 +234,24 @@ const comments = data?.comments || [];
         return;
       }
 
-      container.innerHTML = comments.map((comment) => `
-        <article class="comment-item" data-anonymous-id="${comment.anonymousId}">
-          <div class="comment-avatar">
-            <img 
-              src="https://api.dicebear.com/10.x/lorelei-neutral/svg?seed=${encodeURIComponent(comment.anonymousId)}"
-              alt="Avatar anónimo"
-              loading="lazy"
-            />
-          </div>
-          <div class="comment-content">
-            <header class="comment-header">
-              <span class="comment-author">
-                ${comment.authorName || "Anónimo"}
-              </span>
-              <span class="comment-date" title="${new Date(comment.createdAt).toLocaleString("es-ES")}">
-                ${new Date(comment.createdAt).toLocaleDateString("es-ES", { 
-                  day: "numeric", 
-                  month: "short", 
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit"
-                })}
-              </span>
-              ${comment.isFlagged ? `
-                <span class="flag-badge" title="Contenido censurado por lenguaje inapropiado">
-                  ⚠️ Censurado
-                </span>
-              ` : ""}
-            </header>
-            <p class="comment-text">${comment.content}</p>
-            <span class="current-user-badge" style="display: none;">Tú</span>
-          </div>
-        </article>
-      `).join("");
-
-      markCurrentUserComments();
+      container.innerHTML = comments.map(renderComment).join("");
     } catch (error) {
-      console.error("Error reloading comments:", error);
+      console.error("Error loading comments:", error);
+      container.innerHTML = `
+        <div class="no-comments">
+          <p>Error al cargar comentarios. Recarga la página.</p>
+        </div>
+      `;
     }
   }
 
-  // Marcar comentarios al cargar
-  markCurrentUserComments();
+  // Recargar comentarios (llamado después de enviar uno nuevo)
+  async function reloadComments() {
+    await loadComments();
+  }
+
+  // Cargar al iniciar
+  loadComments();
 
   // Escuchar evento de nuevo comentario
   window.addEventListener("comment-submitted", reloadComments);
