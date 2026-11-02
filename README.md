@@ -1,43 +1,63 @@
-# Astro Starter Kit: Minimal
+# Blog personal
 
-```sh
-pnpm create astro@latest -- --template minimal
+Blog técnico en español sobre JavaScript, TypeScript, React y Astro. Publicado en [blog.beresiarte.xyz](https://blog.beresiarte.xyz).
+
+## Características
+
+- Posts en MDX con etiquetas, búsqueda y página "sobre mí"
+- Comentarios y contador de vistas propios, guardados en Turso con Drizzle
+- Protección contra spam: rate limiting y filtro de lenguaje ofensivo (`obscenity`)
+- SEO: sitemap y metadatos con `astro-seo`
+- Animaciones con `motion`
+
+## Stack
+
+- [Astro](https://astro.build) 7 con MDX y componentes Preact
+- Tailwind CSS 4
+- Turso (libSQL) y Drizzle ORM, con migraciones en `drizzle/`
+- Zod para validar datos
+- Despliegue en Vercel
+
+## Estructura
+
+```
+src/
+  content/blog/   Posts en Markdown/MDX
+  pages/          Inicio, blog, tags, búsqueda y sobre mí
+  actions/        Acciones del servidor (comentarios, vistas)
+  db/             Esquema de Drizzle
+  components/     Componentes de interfaz
+drizzle/          Migraciones
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Puesta en marcha
 
-## 🚀 Project Structure
+Requiere Node.js 22.12 o superior y pnpm.
 
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+```bash
+pnpm install
+cp .env.example .env     # completá TURSO_DATABASE_URL y TURSO_AUTH_TOKEN
+pnpm db:migrate
+pnpm dev
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+| Variable | Descripción |
+|---|---|
+| `TURSO_DATABASE_URL` | URL de la base de datos Turso |
+| `TURSO_AUTH_TOKEN` | Token de acceso |
+| `SITE_URL` | URL pública del sitio (opcional) |
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+## Scripts
 
-Any static assets, like images, can be placed in the `public/` directory.
+```bash
+pnpm dev          # servidor de desarrollo
+pnpm build        # build de producción
+pnpm preview      # previsualizar el build
+pnpm db:generate  # generar migraciones
+pnpm db:migrate   # aplicar migraciones
+pnpm db:studio    # Drizzle Studio
+```
 
-## 🧞 Commands
+## Autor
 
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `pnpm install`             | Installs dependencies                            |
-| `pnpm dev`             | Starts local dev server at `localhost:4321`      |
-| `pnpm build`           | Build your production site to `./dist/`          |
-| `pnpm preview`         | Preview your build locally, before deploying     |
-| `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `pnpm astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+Juan Beresiarte — [@beresiartejuan](https://github.com/beresiartejuan)
